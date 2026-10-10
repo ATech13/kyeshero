@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: all;
+}
+
+@plugin "daisyui/theme" {
+  name: "eglise";
+  default: true;
+  prefersdark: false;
+  --color-base-100: #ffffff;
+  --color-base-200: #f8f6f0;
+  --color-base-300: #e9e4d8;
+  --color-base-content: #1a252c;
+  --color-primary: #1f3d32;
+  --color-primary-content: #ffffff;
+  --color-secondary: #9c6c29;
+  --color-secondary-content: #ffffff;
+  --color-accent: #eaf1ed;
+  --color-accent-content: #1f3d32;
+  --radius-selector: 9999px;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+  --border: 1px;
+}
+
+@plugin "daisyui/theme" {
+  name: "eglise-dark";
+  default: false;
+  prefersdark: true;
+  --color-base-100: #12191f;
+  --color-base-200: #1a232b;
+  --color-base-300: #25323e;
+  --color-base-content: #eff3f6;
+  --color-primary: #3d705e;
+  --color-primary-content: #ffffff;
+  --color-secondary: #c99343;
+  --color-secondary-content: #12191f;
+  --color-accent: #1e332a;
+  --color-accent-content: #d8e8de;
+  --radius-selector: 9999px;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+  --border: 1px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+}
+
+::selection {
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+}
+
+a {
+  text-decoration: none;
+}
+
+/* Accessibilité et focus visible */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

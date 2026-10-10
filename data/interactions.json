@@ -1,0 +1,50 @@
+[
+  {
+    "id": "int_muya7nqf_8qjs",
+    "videoId": "cmuy5lxfx0001c4dqtcvfvlmz",
+    "videoTitle": "2026 10 07 Mercredi. Fr Jean-Claude MUHINDO Assemblée Chretienne Goma/Keshero",
+    "type": "GREETING",
+    "status": "READ",
+    "authorName": "Fr joseph",
+    "contact": "Durba",
+    "content": "Je salut l'église au nom de Jésus Christ",
+    "createdAt": "2026-10-07T15:48:03.688Z",
+    "updatedAt": "2026-10-07T15:49:10.335Z"
+  },
+  {
+    "id": "int_muqu2u4g_u0ag",
+    "videoId": "cmumf63690002v8dqow9fkfzv",
+    "videoTitle": "2026 03 22 Dimanche Fr Joseph Rirwana. Le parent rédempteur. Assemblée Chretienne de Goma/Kyeshero",
+    "type": "GREETING",
+    "status": "NEW",
+    "authorName": "Frère Aaron",
+    "contact": "Goma",
+    "content": "Je salue l'église au nom du seigneur Jésus christ",
+    "createdAt": "2026-10-02T10:42:01.600Z",
+    "updatedAt": "2026-10-02T10:42:01.600Z"
+  },
+  {
+    "id": "int_muqu0g0x_n30n",
+    "videoId": "cmumr92np0000h8dq7db57irq",
+    "videoTitle": "2026 09 29 Mardi. Fr BULUMBA. L'Enseignement sur la sainte cène. Assemblée Chrétienne Goma/Keshero",
+    "type": "COMMENT",
+    "status": "READ",
+    "authorName": "Frère Tech",
+    "contact": "Boma",
+    "content": "Je vous salue tous",
+    "createdAt": "2026-10-02T10:40:10.017Z",
+    "updatedAt": "2026-10-02T10:43:42.760Z"
+  },
+  {
+    "id": "int_muobmjoo_kjl5",
+    "videoId": "cmumr92np0000h8dq7db57irq",
+    "videoTitle": "2026 09 29 Mardi. Fr BULUMBA. L'Enseignement sur la sainte cène. Assemblée Chrétienne Goma/Keshero",
+    "type": "GREETING",
+    "status": "NEW",
+    "authorName": "Frère Aaron",
+    "contact": "Goma",
+    "content": "Je vous saluer mes frères",
+    "createdAt": "2026-09-30T16:29:56.136Z",
+    "updatedAt": "2026-09-30T16:29:56.136Z"
+  }
+]

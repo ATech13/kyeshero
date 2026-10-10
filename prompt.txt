@@ -1,0 +1,25 @@
+Pour l'accueil je veux que le nombre d'onglets à l'accueil soit réduit à 3 et qui seront affichables au niveau
+de la visualisation sur mobile, ces onglets seronts : 
+- Contenus
+- Evénements
+- A-propos
+donc l'accueil sera accessible via le logo de l'église qui se trouve en haut à gauche
+
+Il y aura aussi de changements dans la partie onglets événements car il y a un genre de confusion entre les actualités et les événements.
+Je veux que les événements et actualités puissent être gérés dans le même nouveau onglets événments.
+
+Pour la page accueil on aura une trés courte page donc on aura la taille de toute la page d'accueil sera de 250vh, 100vh seront pour la page présentation,
+le 100vh du bas sera pour seulements l'accès à la prédication ou le live stream du culte en directe, si il n'y a pas de vidéo en directe alors on affichera la vidéo récement publiée.
+dans la page de la présentation on va avoir un carousel qui va faire defiler la page d'accueil, ensuite les contenus se retrouvant dans "enseignement apostolique" de manière automatique et soft avec un design soft 
+
+Dans la partie contenus, nous allons devoir gerer les contenus de youtube (et facebook car partout on a le live) et tiktok, chez youtube (facebook) on aura à publier seulement les prédications mais pour tiktok on va publier les extrais de prédications
+des chansons et d'autres courtes vidéos. Dans cette même partie on doit aussi gerer les contenus audio, qui seront précisement les prédications audios et les chansons, pour tous les audios seront stockés 
+dans imageKit. pour les videos on voit toujours utiliser les liens youtube (facebook) et tiktok.
+
+Le footer doit contenir : les éléments habituels mais aussi les liens de nos trois réseaux (youtube, tiktok et facebook) qui seront donne un peu après
+
+On va devoir ajouter dans l'espace de visualisation de la prédication dans le modal pour youtube et facebook, un petit formulaire qui sera à gauche sur pc 
+et en dessous sur mobile, ce formulaire sera pour envoyer des commentaires chez l'admin, mais aussi une petite partie pour saluer l'église après avoir suivre la 
+prédication. Ces commentaires seront consultables par l'admin dans son espace d'administration et ces commentaires doivent être bien groupés selon les prédications. 
+
+Mais pour le côté admin aura besoin de gérer les toutes les modifications précedentes
