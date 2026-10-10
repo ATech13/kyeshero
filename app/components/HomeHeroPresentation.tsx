@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import bg from "../../public/images/church.webp"
 import {
   Cross,
   ArrowRight,
@@ -137,7 +138,7 @@ export default function HomeHeroPresentation() {
       {/* Image de fond avec voile de contraste soigné */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Image
-          src="/images/church.jpeg"
+          src={bg}
           alt="Sanctuaire de l'Assemblée Chrétienne"
           fill
           priority
