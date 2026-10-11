@@ -1,10 +1,12 @@
 import Image from "next/image";
-import { Heart, BookOpen, Users, Cross, Calendar, MapPin, Sparkles, Quote as QuoteIcon } from "lucide-react";
+import { Heart, BookOpen, Users, Cross, Calendar, MapPin, Sparkles, Quote as QuoteIcon, MessageCircle } from "lucide-react";
 import { getPublicSermonQuotes } from "@/actions/quotes";
 import type { Metadata } from "next";
 import QuotesCarousel from "./QuotesCarousel";
 import ProgramsSchedule from "./ProgramsSchedule";
 import { TeamShowcase, ChurchLifeGallery } from "./TeamGallery";
+import WhatsAppContactForm from "@/app/components/WhatsAppContactForm";
+import bg from "../../public/images/church.webp"
 
 export const metadata: Metadata = {
   title: "À Propos | Assemblée Chrétienne de Goma",
@@ -45,9 +47,9 @@ export default async function AboutPage() {
             id: "default-3",
             quote:
               "La prière fervente et persévérante ouvre les portes que la force humaine ne peut ébranler.",
-            preacher: "Ministère d'Intercession",
+            preacher: "Ministère",
             sermonTitle: "La Ferveur dans la Prière",
-            category: "Prière & Intercession",
+            category: "Prière",
           },
         ];
 
@@ -60,10 +62,10 @@ export default async function AboutPage() {
           <span>Notre Vision &amp; Mission</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-base-content">
-          À propos de l’Assemblée Chrétienne de Goma
+          À propos de l’Assemblée Chrétienne de Goma Kyeshero
         </h1>
         <p className="text-base text-base-content/75 max-w-2xl mx-auto leading-relaxed">
-          Une communauté de foi engagée à vivre et proclamer l’Évangile de Jésus-Christ avec authenticité, amour fraternel et ferveur spirituelle dans la ville de Goma.
+          Une communauté de foi engagée à vivre et proclamer l’Évangile de Jésus-Christ avec authenticité apostolique, amour fraternel et ferveur spirituelle dans la ville de Goma, non loin du terrain SOTRAKI.
         </p>
       </div>
 
@@ -71,7 +73,7 @@ export default async function AboutPage() {
       <figure className="relative overflow-hidden rounded-3xl border border-base-300 shadow-sm -mt-6">
         <div className="relative aspect-[16/9] sm:aspect-[21/9]">
           <Image
-            src="/images/church.webp"
+            src={bg}
             alt="Vue architecturale du temple de l’Assemblée Chrétienne de Goma à Kyeshero"
             fill
             priority
@@ -203,6 +205,30 @@ export default async function AboutPage() {
         </div>
 
         <QuotesCarousel quotes={displayQuotes} />
+      </section>
+
+      {/* Section Contact & Message WhatsApp */}
+      <section className="space-y-8" id="contact-eglise">
+        <div className="border-b border-base-300 pb-4 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <div className="flex items-center justify-center sm:justify-start gap-2 text-xs font-bold text-emerald-600 uppercase tracking-wider">
+              <MessageCircle className="h-4 w-4" />
+              <span>Contact &amp; Intercession</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-base-content mt-1">
+              Envoyer un Message ou une Requête
+            </h2>
+          </div>
+          <p className="text-xs sm:text-sm text-base-content/65 max-w-md text-center sm:text-right">
+            Besoin de prière, d’orientation spirituelle ou d’un échange ? Transmettez directement votre message à nos serviteurs sur WhatsApp.
+          </p>
+        </div>
+
+        <WhatsAppContactForm
+          title="Écrire à l'Assemblée Chrétienne"
+          subtitle="Votre message sera directement préparé et transmis sur WhatsApp au numéro +243 900 163 658."
+          source="a-propos"
+        />
       </section>
     </div>
   );

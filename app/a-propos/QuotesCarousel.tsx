@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Quote as QuoteIcon, Calendar, BookOpen } from "lucide-react";
 import Image from "next/image";
+import bg from "../../public/images/church.webp"
 
 interface QuoteItem {
   id: string;
@@ -57,7 +58,7 @@ export default function QuotesCarousel({ quotes }: QuotesCarouselProps) {
     ? `${current.quote.slice(0, MAX_LENGTH).trim()}...`
     : current.quote;
 
-  const bgImage = current.imageUrl || "/images/church.jpeg";
+  const bgImage = current.imageUrl || bg;
 
   return (
     <div

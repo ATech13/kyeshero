@@ -1,9 +1,10 @@
-import { MapPin, Phone, Youtube } from "lucide-react";
+import { MapPin, Phone, Youtube, MessageCircle } from "lucide-react";
 import { CHURCH_CONFIG } from "@/lib/church-info";
+import WhatsAppContactForm from "@/app/components/WhatsAppContactForm";
 
 export default function ContactPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8 space-y-10 animate-in fade-in duration-500">
+    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8 space-y-10 animate-in fade-in duration-500">
       <div className="text-center space-y-3">
         <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-base-content">
           Contactez l’Assemblée Chrétienne
@@ -13,8 +14,8 @@ export default function ContactPage() {
         </p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <div className="space-y-6">
+      <div className="grid gap-8 lg:grid-cols-5">
+        <div className="lg:col-span-2 space-y-6">
           <div className="flex items-start gap-4 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs hover:border-primary/40 transition">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <MapPin className="h-5 w-5" />
@@ -22,20 +23,38 @@ export default function ContactPage() {
             <div>
               <h3 className="font-bold text-base">Adresse du lieu de culte</h3>
               <p className="text-sm text-base-content/70 mt-0.5">
-                Quartier Keshero, Ville de Goma, Nord-Kivu, RDC
+                Près de SOTRAKI, Quartier Keshero, Ville de Goma, Nord-Kivu, RDC
               </p>
             </div>
           </div>
 
           <div className="flex items-start gap-4 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs hover:border-primary/40 transition">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
               <Phone className="h-5 w-5" />
             </div>
-            <div>
+            <div className="space-y-1">
               <h3 className="font-bold text-base">Téléphone &amp; WhatsApp</h3>
-              <p className="text-sm text-base-content/70 mt-0.5">
-                +243 997 717 686
+              <p className="text-sm font-semibold text-base-content mt-0.5">
+                +243 900 163 658
               </p>
+              {/* <div className="flex flex-wrap gap-2 pt-1">
+                <a
+                  href="tel:+243900163658"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                >
+                  Appeler
+                </a>
+                <span className="text-base-content/30">·</span>
+                <a
+                  href="https://wa.me/243900163658"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline"
+                >
+                  <MessageCircle className="h-3 w-3" />
+                  WhatsApp direct
+                </a>
+              </div> */}
             </div>
           </div>
 
@@ -101,47 +120,13 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <form className="rounded-3xl border border-base-300 bg-base-200/50 p-6 sm:p-8 space-y-4">
-          <h2 className="text-lg font-bold">Envoyer un message à l’église</h2>
-          <div>
-            <label className="block text-xs font-semibold text-base-content/70 mb-1" htmlFor="fullName">
-              Nom complet
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              className="input input-bordered w-full rounded-xl"
-              placeholder="Votre nom"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-base-content/70 mb-1" htmlFor="contactInfo">
-              Numéro de téléphone ou email
-            </label>
-            <input
-              id="contactInfo"
-              type="text"
-              className="input input-bordered w-full rounded-xl"
-              placeholder="Ex: +243... ou email@exemple.com"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-base-content/70 mb-1" htmlFor="message">
-              Votre message ou requête de prière
-            </label>
-            <textarea
-              id="message"
-              className="textarea textarea-bordered w-full rounded-xl h-32"
-              placeholder="Écrivez votre message ici..."
-            />
-          </div>
-          <button
-            type="button"
-            className="btn btn-primary w-full rounded-xl"
-          >
-            Envoyer le message
-          </button>
-        </form>
+        <div className="lg:col-span-3">
+          <WhatsAppContactForm
+            title="Envoyer un message à l’église"
+            subtitle="Remplissez ce formulaire pour envoyer votre requête de prière ou message directement sur WhatsApp."
+            source="contact"
+          />
+        </div>
       </div>
     </div>
   );

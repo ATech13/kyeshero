@@ -36,7 +36,7 @@ export default async function EventsPage({
           Événements &amp; Actualités
         </h1>
         <p className="mt-2 text-sm sm:text-base text-base-content/70 max-w-2xl leading-relaxed">
-          Retrouvez l’ensemble des cultes, séminaires, veillées de prière ainsi que les annonces et nouvelles importantes de l’Assemblée Chrétienne de Goma.
+          Retrouvez l’ensemble des cultes, séminaires, veillés de prière ainsi que les annonces et nouvelles importantes de l’Assemblée Chrétienne de Goma Kyeshero.
         </p>
 
         {/* Note d'aide discrète pour les utilisateurs */}

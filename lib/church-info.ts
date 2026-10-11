@@ -5,7 +5,9 @@ export const CHURCH_CONFIG = {
   name: "Assemblée Chrétienne de Keshero",
   fullCity: "Goma, Nord-Kivu, RDC",
   address: "Quartier Keshero, Ville de Goma, Nord-Kivu, RDC",
-  phone: "+243 997 717 686",
+  phone: "+243 900 163 658",
+  whatsappNumber: "243900163658",
+  whatsappUrl: "https://wa.me/243900163658",
   email: "contact@assembleekeshero.org",
   social: {
     youtube: {

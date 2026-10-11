@@ -29,8 +29,8 @@ const ACTIVITIES: Record<
 
 // Activités listées dans l'ordre chronologique (prière le matin, culte l'après-midi)
 const SITES: { name: string; program: Partial<Record<number, Activity[]>> }[] = [
+    { name: "KYESHERO", program: { 1: ["culte"], 2: ["culte"], 4: ["priere", "culte"], 6: ["culte"] } },
   { name: "TMK", program: { 1: ["culte"], 3: ["culte"], 4: ["priere", "culte"], 6: ["culte"] } },
-  { name: "KYESHERO", program: { 1: ["culte"], 2: ["culte"], 4: ["priere", "culte"], 6: ["culte"] } },
   { name: "TURUNGA", program: { 0: ["culte"], 2: ["culte"], 4: ["priere", "culte"], 6: ["culte"] } },
   { name: "MUGUNGA", program: { 1: ["priere", "culte"], 4: ["culte"], 5: ["culte"], 6: ["culte"] } },
   { name: "BUGAMBA", program: { 1: ["culte"], 2: ["culte"], 4: ["priere", "culte"], 6: ["culte"] } },

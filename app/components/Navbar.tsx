@@ -9,6 +9,8 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import ToggleTheme from "./ToggleTheme";
 import { CHURCH_SOCIAL_LINKS } from "@/lib/church-info";
+import logo from "../../public/images/logo.png"
+import Image from "next/image"
 
 gsap.registerPlugin(useGSAP);
 
@@ -59,11 +61,12 @@ export default function Navbar() {
     return null;
   }
 
-  // Exactement 3 onglets principaux (Accueil exclu, accessible via le logo)
+  // Onglets principaux de navigation (Accueil accessible via le logo)
   const mainTabs = [
     { label: "Contenus", href: "/contenus", matchPrefix: ["/contenus", "/medias"] },
     { label: "Événements", href: "/evenements", matchPrefix: ["/evenements", "/publications"] },
     { label: "À-propos", href: "/a-propos", matchPrefix: ["/a-propos"] },
+    { label: "Contact", href: "/contact", matchPrefix: ["/contact"] },
   ];
 
   const isTabActive = (item: (typeof mainTabs)[0]) => {
@@ -85,8 +88,11 @@ export default function Navbar() {
           title="Accueil — Assemblée Chrétienne de Goma"
           aria-label="Retour à l'accueil"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-content shadow-xs">
-            <Cross className="h-5 w-5" />
+          <div className="flex h-9 w-9 items-center justify-center text-primary-content shadow-xs">
+            <Image
+              src={logo}
+              alt="logo"
+              className="object-cover" />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-black tracking-tight leading-tight text-base-content">
@@ -100,7 +106,7 @@ export default function Navbar() {
 
         {/* Navigation Desktop — Uniquement les 3 onglets principaux */}
         <nav
-          className="hidden md:flex items-center gap-1.5 rounded-2xl bg-base-200/60 p-1 border border-base-300/60"
+          className="hidden md:flex items-center gap-1 rounded-2xl bg-base-200/60 p-1 border border-base-300/60"
           aria-label="Navigation principale"
         >
           {mainTabs.map((item) => {
@@ -109,11 +115,10 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`nav-link-item px-4 py-1.5 text-sm font-bold rounded-xl transition ${
-                  active
+                className={`nav-link-item px-4 py-1.5 text-sm font-bold rounded-xl transition ${active
                     ? "bg-base-100 text-primary shadow-xs"
                     : "text-base-content/75 hover:text-base-content hover:bg-base-100/50"
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>
@@ -124,7 +129,7 @@ export default function Navbar() {
         {/* Actions à droite */}
         <div className="nav-actions flex items-center gap-2 sm:gap-2.5">
           <ToggleTheme />
-          
+
           {/* Menu secondaire mobile (contact, infos) */}
           <button
             className="btn btn-ghost btn-square btn-sm md:hidden text-base-content/70"
@@ -137,10 +142,10 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Barre d'onglets mobile — Directement visible et tactile (Contenus | Événements | À-propos) */}
-      <div className="md:hidden border-t border-base-200/80 bg-base-100/95 px-3 py-1.5">
+      {/* Barre d'onglets mobile — Directement visible et tactile sur une seule ligne */}
+      <div className="md:hidden border-t border-base-200/80 bg-base-100/95 px-2 sm:px-3 py-1.5">
         <nav
-          className="grid grid-cols-3 gap-1 rounded-xl bg-base-200/70 p-1 border border-base-300/50 text-center"
+          className="grid grid-flow-col auto-cols-fr gap-1 rounded-xl bg-base-200/70 p-1 border border-base-300/50 text-center"
           aria-label="Navigation principale mobile"
         >
           {mainTabs.map((item) => {
@@ -149,11 +154,10 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                  active
-                    ? "bg-base-100 text-primary shadow-xs"
-                    : "text-base-content/70 hover:text-base-content"
-                }`}
+                className={`py-2 px-1 text-[11px] sm:text-xs font-bold rounded-lg transition-all text-center truncate flex items-center justify-center ${active
+                    ? "bg-base-100 text-primary shadow-xs font-black"
+                    : "text-base-content/75 hover:text-base-content hover:bg-base-100/40"
+                  }`}
               >
                 {item.label}
               </Link>
