@@ -138,7 +138,7 @@ export default function Footer() {
               Cultes &amp; Rassemblements
             </h3>
             <div className="space-y-2 text-xs sm:text-sm text-base-content/75">
-              <p><strong className="text-base-content">Dimanche :</strong> 09h00 – 1h00</p>
+              <p><strong className="text-base-content">Dimanche :</strong> 09h00 – 12h00</p>
               <p><strong className="text-base-content">Vendredi :</strong> 09h00 – 14h00 &amp; 15h00 – 17h00</p>
               <p><strong className="text-base-content">Mardi &amp; Mercredi :</strong> 15h00 – 17h00</p>
             </div>

@@ -153,7 +153,7 @@ export default function WhatsAppContactForm({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className="textarea textarea-bordered w-full rounded-xl text-sm focus:border-emerald-500 focus:outline-none leading-relaxed"
-            placeholder="Écrivez votre message, requête d'intercession, question ou salutation ici..."
+            placeholder="Écrivez votre message ici..."
           />
         </div>
 
