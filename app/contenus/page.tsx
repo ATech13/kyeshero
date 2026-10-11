@@ -30,7 +30,7 @@ export default async function ContentsPage() {
             Contenus
           </h1>
           <p className="mt-2 text-sm sm:text-base text-base-content/70 max-w-2xl leading-relaxed">
-            Écoutez les prédications audio et louanges de l'Assemblée, et retrouvez toutes les vidéos officielles issues de YouTube, Facebook et TikTok.
+            Écoutez les prédications audio et louanges de l'Assemblée, et retrouvez toutes les vidéos officielles sur YouTube, Facebook et TikTok.
           </p>
         </div>
 

@@ -330,7 +330,21 @@ export default function ContentsExplorer({
             >
               Tous les thèmes
             </button>
-            <button
+            {activeTab === "ALL" && (
+              <button
+                type="button"
+                onClick={() => setCategory("TEACHING")}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                  category === "TEACHING"
+                    ? "bg-primary text-primary-content shadow-xs"
+                    : "bg-base-200/60 text-base-content/70 hover:bg-base-200"
+                }`}
+              >
+                <Radio className="h-3.5 w-3.5" />
+                <span>Prédications</span>
+              </button>
+            )}
+            {/* <button
               type="button"
               onClick={() => setCategory("SERMON")}
               className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
@@ -340,8 +354,8 @@ export default function ContentsExplorer({
               }`}
             >
               <BookOpen className="h-3.5 w-3.5" />
-              <span>Prédications</span>
-            </button>
+              <span>Enseignements</span>
+            </button> */}
             <button
               type="button"
               onClick={() => setCategory("SONG")}
@@ -354,20 +368,7 @@ export default function ContentsExplorer({
               <Music className="h-3.5 w-3.5" />
               <span>Chansons &amp; Louanges</span>
             </button>
-            {activeTab === "ALL" && (
-              <button
-                type="button"
-                onClick={() => setCategory("TEACHING")}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-                  category === "TEACHING"
-                    ? "bg-primary text-primary-content shadow-xs"
-                    : "bg-base-200/60 text-base-content/70 hover:bg-base-200"
-                }`}
-              >
-                <Radio className="h-3.5 w-3.5" />
-                <span>Enseignements</span>
-              </button>
-            )}
+            
           </div>
         )}
       </div>
