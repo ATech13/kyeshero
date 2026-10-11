@@ -5,19 +5,18 @@ import {
   MessageSquareHeart,
   MessageCircle,
   Heart,
-  Eye,
-  Archive,
-  Trash2,
   CheckCircle2,
-  Filter,
   Search,
   Video,
   Clock,
-  Mail,
   User,
+  Archive,
+  Trash2,
+  CheckCheck,
+  MapPin,
   ExternalLink,
-  ChevronDown,
-  Layers,
+  Phone,
+  RotateCcw,
 } from "lucide-react";
 import {
   StoredInteraction,
@@ -25,8 +24,10 @@ import {
   InteractionStatus,
   updateInteractionStatus,
   deleteInteraction,
+  markAllInteractionsAsRead,
 } from "@/actions/interactions";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface InteractionsManagerProps {
   initialInteractions: StoredInteraction[];
@@ -40,42 +41,54 @@ interface InteractionsManagerProps {
   }[];
 }
 
+type TabType = "UNREAD" | "ALL" | "ARCHIVED";
+
 export default function InteractionsManager({
   initialInteractions,
   groupedByVideo,
 }: InteractionsManagerProps) {
   const router = useRouter();
   const [interactions, setInteractions] = useState<StoredInteraction[]>(initialInteractions);
+
+  // Compteurs
+  const unreadCount = interactions.filter((i) => i.status === "NEW").length;
+  const archivedCount = interactions.filter((i) => i.status === "ARCHIVED").length;
+  const activeCount = interactions.filter((i) => i.status !== "ARCHIVED").length;
+
+  // Onglet principal : "À lire" en premier si des messages non lus existent
+  const [activeTab, setActiveTab] = useState<TabType>(unreadCount > 0 ? "UNREAD" : "ALL");
   const [typeFilter, setTypeFilter] = useState<"ALL" | InteractionType>("ALL");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | InteractionStatus>("ALL");
   const [selectedVideoId, setSelectedVideoId] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isPending, startTransition] = useTransition();
-  const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
 
-  // Compteurs
-  const totalCount = interactions.length;
-  const commentCount = interactions.filter((i) => i.type === "COMMENT").length;
-  const greetingCount = interactions.filter((i) => i.type === "GREETING").length;
-  const newCount = interactions.filter((i) => i.status === "NEW").length;
-  const archivedCount = interactions.filter((i) => i.status === "ARCHIVED").length;
+  // Filtrage simple et lisible
+  const filteredList = interactions.filter((item) => {
+    // Filtre de l'onglet principal
+    if (activeTab === "UNREAD" && item.status !== "NEW") return false;
+    if (activeTab === "ARCHIVED" && item.status !== "ARCHIVED") return false;
+    if (activeTab === "ALL" && item.status === "ARCHIVED") return false; // les archives ont leur propre onglet
 
-  // Filtrage
-  const filteredInteractions = interactions.filter((item) => {
+    // Filtre type (Salutation vs Commentaire)
     if (typeFilter !== "ALL" && item.type !== typeFilter) return false;
-    if (statusFilter !== "ALL" && item.status !== statusFilter) return false;
+
+    // Filtre par vidéo
     if (selectedVideoId !== "ALL" && item.videoId !== selectedVideoId) return false;
+
+    // Recherche par mot-clé
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      const matchName = item.authorName.toLowerCase().includes(q);
-      const matchContent = item.content.toLowerCase().includes(q);
-      const matchVideo = item.videoTitle.toLowerCase().includes(q);
-      const matchContact = (item.contact || "").toLowerCase().includes(q);
-      if (!matchName && !matchContent && !matchVideo && !matchContact) return false;
+      const inAuthor = item.authorName.toLowerCase().includes(q);
+      const inContent = item.content.toLowerCase().includes(q);
+      const inVideo = item.videoTitle.toLowerCase().includes(q);
+      const inContact = (item.contact || "").toLowerCase().includes(q);
+      if (!inAuthor && !inContent && !inVideo && !inContact) return false;
     }
+
     return true;
   });
 
+  // Action : changer le statut d'un message
   const handleStatusChange = async (id: string, newStatus: InteractionStatus) => {
     startTransition(async () => {
       try {
@@ -83,15 +96,38 @@ export default function InteractionsManager({
         setInteractions((prev) =>
           prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
         );
-        setActionSuccessMessage(`Statut mis à jour (${newStatus === "READ" ? "Lu" : newStatus === "ARCHIVED" ? "Archivé" : "Nouveau"}).`);
-        setTimeout(() => setActionSuccessMessage(null), 3000);
+        if (newStatus === "READ") {
+          toast.success("Message marqué comme lu");
+        } else if (newStatus === "ARCHIVED") {
+          toast.success("Message déplacé dans les archives");
+        } else {
+          toast.info("Message replacé dans les nouveaux");
+        }
         router.refresh();
       } catch (err) {
-        alert("Erreur lors de la mise à jour du statut.");
+        toast.error("Une erreur est survenue lors de la mise à jour");
       }
     });
   };
 
+  // Action : tout marquer comme lu
+  const handleMarkAllAsRead = async () => {
+    if (unreadCount === 0) return;
+    startTransition(async () => {
+      try {
+        await markAllInteractionsAsRead();
+        setInteractions((prev) =>
+          prev.map((item) => (item.status === "NEW" ? { ...item, status: "READ" } : item))
+        );
+        toast.success("Tous les messages ont été marqués comme lus");
+        router.refresh();
+      } catch (err) {
+        toast.error("Impossible de marquer les messages");
+      }
+    });
+  };
+
+  // Action : supprimer
   const handleDelete = async (id: string, authorName: string) => {
     if (!confirm(`Supprimer définitivement ce message de ${authorName} ?`)) return;
 
@@ -99,426 +135,393 @@ export default function InteractionsManager({
       try {
         await deleteInteraction(id);
         setInteractions((prev) => prev.filter((item) => item.id !== id));
-        setActionSuccessMessage("Message supprimé.");
-        setTimeout(() => setActionSuccessMessage(null), 3000);
+        toast.success("Message supprimé");
         router.refresh();
       } catch (err) {
-        alert("Erreur lors de la suppression.");
+        toast.error("Erreur lors de la suppression");
       }
     });
   };
 
+  // Générer les initiales de l'auteur pour un bel avatar humain
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase() || "FD";
+  };
+
+  // Détecter si le contact est un numéro WhatsApp / téléphone
+  const isPhoneNumber = (contact?: string | null) => {
+    if (!contact) return false;
+    const digitsOnly = contact.replace(/\D/g, "");
+    return digitsOnly.length >= 8;
+  };
+
   return (
     <div className="space-y-6">
-      {/* Toast message de succès */}
-      {actionSuccessMessage && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-2xl bg-base-900 text-base-100 px-4 py-3 shadow-2xl flex items-center gap-2 border border-base-700 animate-in fade-in slide-in-from-bottom-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-          <span className="text-xs font-semibold">{actionSuccessMessage}</span>
-        </div>
-      )}
-
-      {/* Cartes de compteurs statistiques */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <button
-          onClick={() => {
-            setTypeFilter("ALL");
-            setStatusFilter("ALL");
-          }}
-          className={`text-left p-4 rounded-2xl border transition ${
-            typeFilter === "ALL" && statusFilter === "ALL"
-              ? "border-primary bg-primary/5 shadow-xs"
-              : "border-base-300 bg-base-100 hover:border-base-content/20"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-base-content/60">Total</span>
-            <Layers className="h-4 w-4 text-base-content/40" />
-          </div>
-          <p className="text-2xl font-black text-base-content mt-1">{totalCount}</p>
-          <p className="text-[11px] text-base-content/60 mt-0.5">Toutes interactions</p>
-        </button>
-
-        <button
-          onClick={() => {
-            setStatusFilter("NEW");
-            setTypeFilter("ALL");
-          }}
-          className={`text-left p-4 rounded-2xl border transition ${
-            statusFilter === "NEW"
-              ? "border-amber-500 bg-amber-500/10 shadow-xs"
-              : "border-base-300 bg-base-100 hover:border-base-content/20"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-600 dark:text-amber-400">Non lus</span>
-            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-          </div>
-          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{newCount}</p>
-          <p className="text-[11px] text-base-content/60 mt-0.5">À traiter</p>
-        </button>
-
-        <button
-          onClick={() => setTypeFilter("COMMENT")}
-          className={`text-left p-4 rounded-2xl border transition ${
-            typeFilter === "COMMENT"
-              ? "border-primary bg-primary/10 shadow-xs"
-              : "border-base-300 bg-base-100 hover:border-base-content/20"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-primary">Commentaires</span>
-            <MessageCircle className="h-4 w-4 text-primary/60" />
-          </div>
-          <p className="text-2xl font-black text-primary mt-1">{commentCount}</p>
-          <p className="text-[11px] text-base-content/60 mt-0.5">Réactions & questions</p>
-        </button>
-
-        <button
-          onClick={() => setTypeFilter("GREETING")}
-          className={`text-left p-4 rounded-2xl border transition ${
-            typeFilter === "GREETING"
-              ? "border-secondary bg-secondary/10 shadow-xs"
-              : "border-base-300 bg-base-100 hover:border-base-content/20"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-secondary">Salutations</span>
-            <Heart className="h-4 w-4 text-secondary/60" />
-          </div>
-          <p className="text-2xl font-black text-secondary mt-1">{greetingCount}</p>
-          <p className="text-[11px] text-base-content/60 mt-0.5">Bénédictions fraternelles</p>
-        </button>
-      </div>
-
-      {/* Barre de filtrage & Recherche */}
-      <div className="rounded-2xl border border-base-300 bg-base-100 p-4 space-y-4 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          {/* Onglets de type */}
-          <div className="inline-flex rounded-xl bg-base-200 p-1 gap-1">
-            <button
-              onClick={() => setTypeFilter("ALL")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                typeFilter === "ALL" ? "bg-base-100 text-base-content shadow-xs" : "text-base-content/70 hover:text-base-content"
-              }`}
-            >
-              Tous ({totalCount})
-            </button>
-            <button
-              onClick={() => setTypeFilter("COMMENT")}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                typeFilter === "COMMENT" ? "bg-base-100 text-primary shadow-xs" : "text-base-content/70 hover:text-base-content"
-              }`}
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              <span>Commentaires ({commentCount})</span>
-            </button>
-            <button
-              onClick={() => setTypeFilter("GREETING")}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                typeFilter === "GREETING" ? "bg-base-100 text-secondary shadow-xs" : "text-base-content/70 hover:text-base-content"
-              }`}
-            >
-              <Heart className="h-3.5 w-3.5" />
-              <span>Salutations ({greetingCount})</span>
-            </button>
-          </div>
-
-          {/* Filtres par statut */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold text-base-content/60">Statut :</span>
-            {(["ALL", "NEW", "READ", "ARCHIVED"] as const).map((st) => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
-                  statusFilter === st
-                    ? "bg-base-content text-base-100 shadow-xs"
-                    : "bg-base-200 text-base-content/75 hover:bg-base-300"
+      {/* 1. Onglets principaux clairs (Boîte de réception) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-base-300 pb-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            onClick={() => setActiveTab("UNREAD")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition ${
+              activeTab === "UNREAD"
+                ? "bg-primary text-primary-content shadow-sm"
+                : "text-base-content/70 hover:bg-base-200 hover:text-base-content"
+            }`}
+          >
+            <span>À lire (Non lus)</span>
+            {unreadCount > 0 && (
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-black ${
+                  activeTab === "UNREAD"
+                    ? "bg-primary-content text-primary"
+                    : "bg-amber-500 text-white"
                 }`}
               >
-                {st === "ALL" && "Tous"}
-                {st === "NEW" && "Nouveaux"}
-                {st === "READ" && "Lus"}
-                {st === "ARCHIVED" && "Archivés"}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Deuxième ligne : Sélecteur de prédication & Champ de recherche */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-base-200">
-          {/* Sélecteur Prédication */}
-          <div className="relative sm:w-72">
-            <select
-              value={selectedVideoId}
-              onChange={(e) => setSelectedVideoId(e.target.value)}
-              className="select select-sm select-bordered w-full rounded-xl text-xs font-medium"
-            >
-              <option value="ALL">Toutes les prédications ({groupedByVideo.length})</option>
-              {groupedByVideo.map((v) => (
-                <option key={v.videoId} value={v.videoId}>
-                  {v.videoTitle} ({v.total})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Recherche textuelle */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-base-content/40" />
-            <input
-              type="text"
-              placeholder="Rechercher par nom, message ou prédication..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input input-sm input-bordered w-full pl-9 rounded-xl text-xs"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-base-content/50 hover:text-base-content font-bold"
-              >
-                ×
-              </button>
+                {unreadCount}
+              </span>
             )}
-          </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("ALL")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition ${
+              activeTab === "ALL"
+                ? "bg-primary text-primary-content shadow-sm"
+                : "text-base-content/70 hover:bg-base-200 hover:text-base-content"
+            }`}
+          >
+            <span>Tous les messages</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-black ${
+                activeTab === "ALL"
+                  ? "bg-primary-content text-primary"
+                  : "bg-base-300 text-base-content/80"
+              }`}
+            >
+              {activeCount}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("ARCHIVED")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition ${
+              activeTab === "ARCHIVED"
+                ? "bg-primary text-primary-content shadow-sm"
+                : "text-base-content/70 hover:bg-base-200 hover:text-base-content"
+            }`}
+          >
+            <span>Archives</span>
+            {archivedCount > 0 && (
+              <span className="opacity-75 text-xs">({archivedCount})</span>
+            )}
+          </button>
         </div>
+
+        {/* Bouton rapide "Tout marquer comme lu" */}
+        {unreadCount > 0 && (
+          <button
+            onClick={handleMarkAllAsRead}
+            disabled={isPending}
+            className="btn btn-sm btn-ghost text-emerald-600 hover:bg-emerald-500/10 font-bold gap-1.5 self-start sm:self-center"
+            title="Marquer tous les messages non lus comme lus"
+          >
+            <CheckCheck className="h-4 w-4" />
+            <span>Tout marquer comme lu ({unreadCount})</span>
+          </button>
+        )}
       </div>
 
-      {/* Regroupement par prédication si vue prédication active */}
-      {selectedVideoId === "ALL" && groupedByVideo.length > 0 && (
-        <div className="rounded-2xl border border-base-300 bg-base-100 p-4 space-y-3 shadow-xs">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Video className="h-4 w-4 text-primary" />
-              <h3 className="text-xs font-black uppercase tracking-wider text-base-content">
-                Interactions par Prédication
-              </h3>
-            </div>
-            <span className="text-xs text-base-content/60 font-medium">
-              {groupedByVideo.length} prédication(s) avec messages
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {groupedByVideo.map((vid) => (
-              <button
-                key={vid.videoId}
-                onClick={() => setSelectedVideoId(vid.videoId)}
-                className="text-left p-3 rounded-xl bg-base-200/60 hover:bg-base-200 border border-base-300 transition flex items-center justify-between gap-2"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-base-content truncate">{vid.videoTitle}</p>
-                  <p className="text-[10px] text-base-content/60 mt-0.5">
-                    {vid.commentsCount} com. · {vid.greetingsCount} salut.
-                  </p>
-                </div>
-                {vid.newCount > 0 && (
-                  <span className="badge badge-xs badge-warning font-bold shrink-0">
-                    {vid.newCount} new
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Liste des messages */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <p className="text-xs font-bold text-base-content/70">
-            {filteredInteractions.length} interaction{filteredInteractions.length > 1 ? "s" : ""}{" "}
-            affichée{filteredInteractions.length > 1 ? "s" : ""}
-            {selectedVideoId !== "ALL" && " (filtré par prédication)"}
-          </p>
-          {selectedVideoId !== "ALL" && (
+      {/* 2. Barre de recherche et filtres simples */}
+      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+        {/* Champ de recherche */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/40" />
+          <input
+            type="text"
+            placeholder="Rechercher par nom de fidèle ou mot-clé..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="input input-sm input-bordered w-full pl-9 rounded-xl text-xs sm:text-sm"
+          />
+          {searchQuery && (
             <button
-              onClick={() => setSelectedVideoId("ALL")}
-              className="text-xs font-semibold text-primary hover:underline"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-base-content/50 hover:text-base-content"
             >
-              Réinitialiser le filtre prédication
+              Effacer
             </button>
           )}
         </div>
 
-        {filteredInteractions.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-12 text-center space-y-3">
-            <MessageSquareHeart className="mx-auto h-8 w-8 text-base-content/30" />
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          {/* Filtre Salutation vs Commentaire */}
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as any)}
+            className="select select-sm select-bordered rounded-xl text-xs font-medium"
+          >
+            <option value="ALL">Tous les types de message</option>
+            <option value="GREETING">Salutations fraternelles uniquement</option>
+            <option value="COMMENT">Questions &amp; Commentaires uniquement</option>
+          </select>
+
+          {/* Filtre par vidéo (si plusieurs prédications) */}
+          {groupedByVideo.length > 0 && (
+            <select
+              value={selectedVideoId}
+              onChange={(e) => setSelectedVideoId(e.target.value)}
+              className="select select-sm select-bordered rounded-xl text-xs font-medium max-w-[200px] truncate"
+            >
+              <option value="ALL">Toutes les prédications</option>
+              {groupedByVideo.map((v) => (
+                <option key={v.videoId} value={v.videoId}>
+                  {v.videoTitle}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+
+      {/* 3. Liste des messages */}
+      <div className="space-y-3.5">
+        {filteredList.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-10 text-center space-y-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-base-200 mx-auto text-base-content/40">
+              <MessageSquareHeart className="h-6 w-6" />
+            </div>
             <div className="space-y-1">
-              <h4 className="font-bold text-sm text-base-content">Aucune interaction trouvée</h4>
-              <p className="text-xs text-base-content/60 max-w-sm mx-auto">
-                Aucun message ne correspond aux critères sélectionnés. Les commentaires ou salutations
-                laissés par les visiteurs apparaîtront ici.
+              <h3 className="font-bold text-base text-base-content">
+                {activeTab === "UNREAD"
+                  ? "Aucun message en attente"
+                  : activeTab === "ARCHIVED"
+                  ? "Aucun message archivé"
+                  : "Aucun message trouvé"}
+              </h3>
+              <p className="text-xs sm:text-sm text-base-content/60 max-w-md mx-auto">
+                {activeTab === "UNREAD"
+                  ? "Excellente nouvelle ! Tous les messages des fidèles ont été lus et traités."
+                  : searchQuery
+                  ? "Aucun message ne correspond à votre recherche."
+                  : "Les commentaires et salutations laissés par les fidèles s'afficheront ici."}
               </p>
             </div>
-            {(typeFilter !== "ALL" || statusFilter !== "ALL" || selectedVideoId !== "ALL" || searchQuery) && (
+            {activeTab === "UNREAD" && activeCount > 0 && (
               <button
-                onClick={() => {
-                  setTypeFilter("ALL");
-                  setStatusFilter("ALL");
-                  setSelectedVideoId("ALL");
-                  setSearchQuery("");
-                }}
-                className="btn btn-ghost btn-xs text-primary font-bold"
+                onClick={() => setActiveTab("ALL")}
+                className="btn btn-outline btn-sm rounded-xl text-xs font-bold"
               >
-                Réinitialiser tous les filtres
+                Voir tous les messages ({activeCount})
               </button>
             )}
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredInteractions.map((item) => {
-              const isGreeting = item.type === "GREETING";
-              const isNew = item.status === "NEW";
-              const isArchived = item.status === "ARCHIVED";
+          filteredList.map((item) => {
+            const isUnread = item.status === "NEW";
+            const isGreeting = item.type === "GREETING";
+            const isArchived = item.status === "ARCHIVED";
+            const hasPhone = isPhoneNumber(item.contact);
+            const cleanPhone = (item.contact || "").replace(/\D/g, "");
 
-              return (
-                <div
-                  key={item.id}
-                  className={`rounded-2xl border p-4 sm:p-5 transition shadow-xs space-y-3 ${
-                    isNew
-                      ? "border-amber-400/50 bg-amber-500/5 dark:bg-amber-950/10"
-                      : isArchived
-                      ? "border-base-300 bg-base-100/50 opacity-75"
-                      : "border-base-300 bg-base-100"
-                  }`}
-                >
-                  {/* Entête du message : Type, Auteur, Prédication & Date */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-base-200/80 pb-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {/* Badge Type */}
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-black uppercase tracking-wider ${
-                          isGreeting
-                            ? "bg-secondary/15 text-secondary"
-                            : "bg-primary/15 text-primary"
-                        }`}
-                      >
-                        {isGreeting ? (
-                          <>
-                            <Heart className="h-3 w-3 fill-current" />
-                            <span>Salutation</span>
-                          </>
-                        ) : (
-                          <>
-                            <MessageCircle className="h-3 w-3" />
-                            <span>Commentaire</span>
-                          </>
+            return (
+              <div
+                key={item.id}
+                className={`rounded-2xl border transition p-4 sm:p-5 space-y-3 shadow-xs ${
+                  isUnread
+                    ? "border-amber-400/80 bg-amber-500/5 dark:bg-amber-950/15 ring-1 ring-amber-400/30"
+                    : "border-base-300 bg-base-100"
+                }`}
+              >
+                {/* Ligne 1 : Fidèle, badge statut et date */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar avec initiales */}
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
+                        isGreeting
+                          ? "bg-secondary/15 text-secondary"
+                          : "bg-primary/15 text-primary"
+                      }`}
+                    >
+                      {getInitials(item.authorName)}
+                    </div>
+
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-black text-sm sm:text-base text-base-content">
+                          {item.authorName}
+                        </span>
+
+                        {/* Lieu ou contact */}
+                        {item.contact && !hasPhone && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-base-200 px-2 py-0.5 text-xs font-medium text-base-content/75">
+                            <MapPin className="h-3 w-3 text-primary" />
+                            <span>{item.contact}</span>
+                          </span>
                         )}
-                      </span>
 
-                      {/* Badge Statut */}
-                      <span
-                        className={`badge badge-sm font-bold ${
-                          isNew
-                            ? "badge-warning"
-                            : isArchived
-                            ? "badge-ghost text-base-content/60"
-                            : "badge-success"
-                        }`}
-                      >
-                        {isNew ? "Nouveau" : isArchived ? "Archivé" : "Lu"}
-                      </span>
-
-                      {/* Auteur */}
-                      <div className="flex items-center gap-1.5 font-bold text-sm text-base-content">
-                        <User className="h-3.5 w-3.5 text-base-content/50" />
-                        <span>{item.authorName}</span>
+                        {/* Numéro avec bouton WhatsApp direct si présent */}
+                        {hasPhone && (
+                          <a
+                            href={`https://wa.me/${cleanPhone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 text-xs font-bold hover:underline"
+                            title="Ouvrir WhatsApp pour répondre à ce fidèle"
+                          >
+                            <Phone className="h-3 w-3" />
+                            <span>WhatsApp : {item.contact}</span>
+                          </a>
+                        )}
                       </div>
 
-                      {/* Contact éventuel */}
-                      {item.contact && (
-                        <div className="flex items-center gap-1 text-xs text-base-content/60 bg-base-200/70 px-2 py-0.5 rounded-md">
-                          <Mail className="h-3 w-3" />
-                          <span>{item.contact}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Date */}
-                    <div className="flex items-center gap-1.5 text-xs text-base-content/60 font-medium">
-                      <Clock className="h-3 w-3" />
-                      <span>
-                        {new Date(item.createdAt).toLocaleDateString("fr-FR", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                      {/* Date de réception */}
+                      <p className="text-[11px] text-base-content/55 flex items-center gap-1 mt-0.5">
+                        <Clock className="h-3 w-3" />
+                        <span>
+                          {new Date(item.createdAt).toLocaleDateString("fr-FR", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </p>
                     </div>
                   </div>
 
-                  {/* Prédication associée */}
-                  <div className="flex items-center gap-2 text-xs font-semibold text-base-content/75 bg-base-200/50 px-3 py-1.5 rounded-xl border border-base-200">
-                    <Video className="h-3.5 w-3.5 text-primary shrink-0" />
-                    <span className="text-base-content/50">Prédication :</span>
-                    <span className="text-base-content font-bold truncate">
-                      {item.videoTitle || "Prédication"}
-                    </span>
-                  </div>
-
-                  {/* Corps du message */}
-                  <div className="text-sm text-base-content leading-relaxed whitespace-pre-line bg-base-200/30 p-3 rounded-xl border border-base-200">
-                    {item.content}
-                  </div>
-
-                  {/* Actions Administrateur */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {item.status !== "READ" && (
-                        <button
-                          onClick={() => handleStatusChange(item.id, "READ")}
-                          disabled={isPending}
-                          className="btn btn-xs btn-outline btn-success rounded-lg gap-1 font-bold"
-                          title="Marquer comme lu"
-                        >
-                          <CheckCircle2 className="h-3 w-3" />
-                          <span>Marquer lu</span>
-                        </button>
-                      )}
-
-                      {item.status !== "ARCHIVED" && (
-                        <button
-                          onClick={() => handleStatusChange(item.id, "ARCHIVED")}
-                          disabled={isPending}
-                          className="btn btn-xs btn-ghost text-base-content/70 hover:text-base-content rounded-lg gap-1 font-semibold"
-                          title="Archiver"
-                        >
-                          <Archive className="h-3 w-3" />
-                          <span>Archiver</span>
-                        </button>
-                      )}
-
-                      {item.status !== "NEW" && (
-                        <button
-                          onClick={() => handleStatusChange(item.id, "NEW")}
-                          disabled={isPending}
-                          className="btn btn-xs btn-ghost text-amber-600 dark:text-amber-400 rounded-lg gap-1 font-semibold"
-                          title="Remettre en nouveau"
-                        >
-                          <span>Remettre à traiter</span>
-                        </button>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => handleDelete(item.id, item.authorName)}
-                      disabled={isPending}
-                      className="btn btn-xs btn-ghost btn-error rounded-lg gap-1 font-semibold"
-                      title="Supprimer définitivement"
+                  {/* Badges d'état et de type à droite */}
+                  <div className="flex items-center gap-2 self-start sm:self-center">
+                    {/* Badge type (Salutation ou Commentaire) */}
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold ${
+                        isGreeting
+                          ? "bg-secondary/10 text-secondary"
+                          : "bg-primary/10 text-primary"
+                      }`}
                     >
-                      <Trash2 className="h-3 w-3" />
-                      <span>Supprimer</span>
-                    </button>
+                      {isGreeting ? (
+                        <>
+                          <Heart className="h-3 w-3 fill-current" />
+                          <span>Salutation</span>
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="h-3 w-3" />
+                          <span>Commentaire</span>
+                        </>
+                      )}
+                    </span>
+
+                    {/* Badge statut (Nouveau vs Lu vs Archivé) */}
+                    {isUnread && (
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-400 px-2.5 py-1 text-[11px] font-black">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                        <span>À lire</span>
+                      </span>
+                    )}
+
+                    {!isUnread && !isArchived && (
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-base-200 text-base-content/65 px-2.5 py-1 text-[11px] font-semibold">
+                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                        <span>Lu</span>
+                      </span>
+                    )}
+
+                    {isArchived && (
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-base-200 text-base-content/50 px-2 py-0.5 text-[11px]">
+                        Archivé
+                      </span>
+                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Ligne 2 : Message du fidèle (simple, aéré, sans boîte grise encombrante) */}
+                <div className="text-sm sm:text-base text-base-content leading-relaxed whitespace-pre-line pl-1 sm:pl-13 font-normal">
+                  « {item.content} »
+                </div>
+
+                {/* Ligne 3 : Prédication associée */}
+                <div className="flex items-center gap-2 text-xs text-base-content/70 pl-1 sm:pl-13 pt-1">
+                  <Video className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="text-base-content/50">Prédication :</span>
+                  <span className="font-semibold text-base-content truncate">
+                    {item.videoTitle || "Prédication de l'église"}
+                  </span>
+                </div>
+
+                {/* Ligne 4 : Actions Administrateur (Boutons clairs et bien identifiés) */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-base-200/80 sm:pl-13">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Marquer comme lu (visible et évident) */}
+                    {isUnread && (
+                      <button
+                        onClick={() => handleStatusChange(item.id, "READ")}
+                        disabled={isPending}
+                        className="btn btn-xs sm:btn-sm btn-success text-white rounded-xl gap-1.5 font-bold shadow-xs"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Marquer comme lu</span>
+                      </button>
+                    )}
+
+                    {/* Marquer comme non lu si besoin de relire */}
+                    {!isUnread && !isArchived && (
+                      <button
+                        onClick={() => handleStatusChange(item.id, "NEW")}
+                        disabled={isPending}
+                        className="btn btn-xs sm:btn-sm btn-ghost text-base-content/65 hover:text-base-content rounded-xl text-xs"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        <span>Marquer non lu</span>
+                      </button>
+                    )}
+
+                    {/* Archiver */}
+                    {!isArchived && (
+                      <button
+                        onClick={() => handleStatusChange(item.id, "ARCHIVED")}
+                        disabled={isPending}
+                        className="btn btn-xs sm:btn-sm btn-ghost text-base-content/65 hover:text-base-content rounded-xl text-xs gap-1"
+                        title="Archiver pour ranger ce message"
+                      >
+                        <Archive className="h-3 w-3" />
+                        <span>Archiver</span>
+                      </button>
+                    )}
+
+                    {/* Désarchiver */}
+                    {isArchived && (
+                      <button
+                        onClick={() => handleStatusChange(item.id, "READ")}
+                        disabled={isPending}
+                        className="btn btn-xs sm:btn-sm btn-ghost text-primary font-bold rounded-xl text-xs gap-1"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        <span>Sortir des archives</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Supprimer définitivement */}
+                  <button
+                    onClick={() => handleDelete(item.id, item.authorName)}
+                    disabled={isPending}
+                    className="btn btn-xs sm:btn-sm btn-ghost text-error/70 hover:text-error hover:bg-error/10 rounded-xl text-xs gap-1"
+                    title="Supprimer définitivement"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Supprimer</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
     </div>

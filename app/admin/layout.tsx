@@ -10,7 +10,6 @@ import {
   ShieldAlert,
   LogOut,
   ArrowLeft,
-  Newspaper,
   Quote,
   MessageSquareHeart,
 } from "lucide-react";
@@ -98,10 +97,9 @@ export default async function AdminLayout({
   const navItems = [
     { label: "Tableau de bord", href: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
     { label: "Contenus (Vidéos & Audios)", href: "/admin/contenus", icon: <Radio className="h-4 w-4" /> },
-    { label: "Publications & Travaux", href: "/admin/publications", icon: <Newspaper className="h-4 w-4" /> },
     { label: "Citations de Prédications", href: "/admin/citations", icon: <Quote className="h-4 w-4" /> },
     { label: "Événements & Actualités", href: "/admin/evenements", icon: <Calendar className="h-4 w-4" /> },
-    { label: "Interactions Prédications", href: "/admin/interactions", icon: <MessageSquareHeart className="h-4 w-4" /> },
+    { label: "Messages des fidèles", href: "/admin/interactions", icon: <MessageSquareHeart className="h-4 w-4" /> },
   ];
 
   return (

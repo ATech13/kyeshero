@@ -6,15 +6,12 @@ import {
   Plus,
   ArrowRight,
   Clock,
-  Newspaper,
   Quote,
-  HardHat,
   MessageSquareHeart,
+  MapPin,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-user";
-import { POST_CATEGORY_LABELS } from "@/lib/post-constants";
-import { PostCategory } from "@prisma/client";
 import { getInteractionsStats } from "@/actions/interactions";
 
 export default async function AdminDashboardPage() {
@@ -22,25 +19,18 @@ export default async function AdminDashboardPage() {
 
   const [
     eventCount,
-    postCount,
     quoteCount,
     mediaCount,
     videoCount,
     recentEvents,
-    recentPosts,
     recentQuotes,
     interactionStats,
   ] = await Promise.all([
     prisma.event.count().catch(() => 0),
-    prisma.post.count().catch(() => 0),
     prisma.sermonQuote.count().catch(() => 0),
     prisma.media.count().catch(() => 0),
     prisma.youTubeVideo.count().catch(() => 0),
     prisma.event.findMany({
-      take: 3,
-      orderBy: { createdAt: "desc" },
-    }).catch(() => []),
-    prisma.post.findMany({
       take: 3,
       orderBy: { createdAt: "desc" },
     }).catch(() => []),
@@ -66,7 +56,7 @@ export default async function AdminDashboardPage() {
             Tableau de Bord
           </h1>
           <p className="text-sm text-base-content/65 mt-1">
-            Centre de communication et de gestion : publications de travaux, citations, cultes et médias.
+            Centre de communication et de gestion : prédications, citations, cultes et événements.
           </p>
         </div>
 
@@ -79,11 +69,11 @@ export default async function AdminDashboardPage() {
             <span>Nouveau Contenu</span>
           </Link>
           <Link
-            href="/admin/publications"
+            href="/admin/evenements"
             className="btn btn-outline btn-sm rounded-xl font-bold gap-1.5"
           >
             <Plus className="h-4 w-4" />
-            <span>Nouvelle Publication</span>
+            <span>Nouvel Événement</span>
           </Link>
           <Link
             href="/admin/citations"
@@ -95,29 +85,29 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Cartes de statistiques & Raccourcis (Grille 6 colonnes) */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {/* 1. Publications & Travaux */}
+      {/* Cartes de statistiques & Raccourcis (Grille 5 colonnes) */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {/* 1. Événements & Actualités */}
         <Link
-          href="/admin/publications"
+          href="/admin/evenements"
           className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs hover:border-primary/50 transition group space-y-3"
         >
           <div className="flex items-center justify-between">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-105 transition">
-              <Newspaper className="h-5 w-5" />
+              <Calendar className="h-5 w-5" />
             </span>
             <span className="text-2xl font-black text-base-content">
-              {postCount}
+              {eventCount}
             </span>
           </div>
           <div>
-            <h3 className="font-bold text-sm text-base-content">Publications</h3>
+            <h3 className="font-bold text-sm text-base-content">Événements &amp; Cultes</h3>
             <p className="text-[11px] text-base-content/60 mt-0.5 line-clamp-1">
-              Travaux, vie de l'église, annonces.
+              Cultes spéciaux, veillées, retraites.
             </p>
           </div>
           <div className="pt-1 text-xs font-bold text-primary flex items-center gap-1 group-hover:underline">
-            <span>Gérer</span>
+            <span>Gérer les rassemblements</span>
             <ArrowRight className="h-3 w-3" />
           </div>
         </Link>
@@ -136,43 +126,18 @@ export default async function AdminDashboardPage() {
             </span>
           </div>
           <div>
-            <h3 className="font-bold text-sm text-base-content">Citations</h3>
+            <h3 className="font-bold text-sm text-base-content">Citations Spirituelles</h3>
             <p className="text-[11px] text-base-content/60 mt-0.5 line-clamp-1">
-              Paroles fortes entendues aux cultes.
+              Paroles édifiantes des prédicateurs.
             </p>
           </div>
           <div className="pt-1 text-xs font-bold text-secondary flex items-center gap-1 group-hover:underline">
-            <span>Gérer</span>
+            <span>Gérer les citations</span>
             <ArrowRight className="h-3 w-3" />
           </div>
         </Link>
 
-        {/* 3. Événements */}
-        <Link
-          href="/admin/evenements"
-          className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs hover:border-primary/50 transition group space-y-3"
-        >
-          <div className="flex items-center justify-between">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-105 transition">
-              <Calendar className="h-5 w-5" />
-            </span>
-            <span className="text-2xl font-black text-base-content">
-              {eventCount}
-            </span>
-          </div>
-          <div>
-            <h3 className="font-bold text-sm text-base-content">Événements</h3>
-            <p className="text-[11px] text-base-content/60 mt-0.5 line-clamp-1">
-              Cultes & rassemblements.
-            </p>
-          </div>
-          <div className="pt-1 text-xs font-bold text-primary flex items-center gap-1 group-hover:underline">
-            <span>Gérer</span>
-            <ArrowRight className="h-3 w-3" />
-          </div>
-        </Link>
-
-        {/* 4. Audios ImageKit */}
+        {/* 3. Audios & Prédications */}
         <Link
           href="/admin/contenus?tab=audios"
           className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs hover:border-primary/50 transition group space-y-3"
@@ -186,7 +151,7 @@ export default async function AdminDashboardPage() {
             </span>
           </div>
           <div>
-            <h3 className="font-bold text-sm text-base-content">Audios ImageKit</h3>
+            <h3 className="font-bold text-sm text-base-content">Médiathèque Audio</h3>
             <p className="text-[11px] text-base-content/60 mt-0.5 line-clamp-1">
               Prédications &amp; chants louange.
             </p>
@@ -197,7 +162,7 @@ export default async function AdminDashboardPage() {
           </div>
         </Link>
 
-        {/* 5. Vidéos (YouTube, Facebook, TikTok) */}
+        {/* 4. Vidéos (YouTube, Facebook, TikTok) */}
         <Link
           href="/admin/contenus?tab=videos"
           className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs hover:border-error/50 transition group space-y-3"
@@ -222,7 +187,7 @@ export default async function AdminDashboardPage() {
           </div>
         </Link>
 
-        {/* 6. Interactions & Salutations */}
+        {/* 5. Messages des fidèles */}
         <Link
           href="/admin/interactions"
           className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs hover:border-accent/50 transition group space-y-3"
@@ -243,9 +208,9 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div>
-            <h3 className="font-bold text-sm text-base-content">Interactions</h3>
+            <h3 className="font-bold text-sm text-base-content">Messages des fidèles</h3>
             <p className="text-[11px] text-base-content/60 mt-0.5 line-clamp-1">
-              {interactionStats.commentsCount} com. · {interactionStats.greetingsCount} salut.
+              {interactionStats.newCount > 0 ? `${interactionStats.newCount} nouveau(x) à lire` : "Tous les messages ont été lus"}
             </p>
           </div>
           <div className="pt-1 text-xs font-bold text-accent flex items-center gap-1 group-hover:underline">
@@ -255,47 +220,50 @@ export default async function AdminDashboardPage() {
         </Link>
       </div>
 
-      {/* Récemment créés : 2 colonnes (Publications & Citations) */}
+      {/* Récemment créés : 2 colonnes (Événements & Citations) */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Dernières Publications */}
+        {/* Derniers Événements */}
         <div className="rounded-2xl border border-base-300 bg-base-100 p-4 sm:p-6 space-y-4 overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <Newspaper className="h-4 w-4 text-primary shrink-0" />
+              <Calendar className="h-4 w-4 text-primary shrink-0" />
               <h2 className="text-sm sm:text-base font-bold text-base-content truncate">
-                Dernières publications & travaux
+                Derniers événements &amp; actualités
               </h2>
             </div>
             <Link
-              href="/admin/publications"
+              href="/admin/evenements"
               className="text-xs font-semibold text-primary hover:underline shrink-0"
             >
               Gérer tout →
             </Link>
           </div>
 
-          {recentPosts.length === 0 ? (
+          {recentEvents.length === 0 ? (
             <p className="text-xs text-base-content/60 py-4">
-              Aucune publication pour le moment.
+              Aucun événement programmé pour le moment.
             </p>
           ) : (
             <div className="divide-y divide-base-200">
-              {recentPosts.map((post: any) => (
+              {recentEvents.map((evt: any) => (
                 <div
-                  key={post.id}
+                  key={evt.id}
                   className="py-3 flex items-center justify-between gap-3 min-w-0"
                 >
                   <div className="min-w-0 flex-1">
                     <h4 className="font-bold text-xs sm:text-sm truncate text-base-content">
-                      {post.title}
+                      {evt.title}
                     </h4>
                     <p className="text-[11px] text-base-content/60 flex flex-wrap items-center gap-1.5 mt-0.5">
-                      <span className="badge badge-xs font-bold bg-base-200 text-base-content/80 shrink-0">
-                        {POST_CATEGORY_LABELS[post.category as PostCategory] || post.category}
-                      </span>
+                      {evt.location && (
+                        <span className="inline-flex items-center gap-1 shrink-0">
+                          <MapPin className="h-3 w-3 text-primary" />
+                          <span>{evt.location}</span>
+                        </span>
+                      )}
                       <span className="shrink-0">·</span>
                       <span className="shrink-0">
-                        {new Date(post.createdAt).toLocaleDateString("fr-FR", {
+                        {new Date(evt.startAt || evt.createdAt).toLocaleDateString("fr-FR", {
                           day: "numeric",
                           month: "short",
                         })}
@@ -304,10 +272,10 @@ export default async function AdminDashboardPage() {
                   </div>
                   <span
                     className={`badge badge-xs font-semibold shrink-0 ${
-                      post.status === "PUBLISHED" ? "badge-success" : "badge-ghost"
+                      evt.status === "PUBLISHED" ? "badge-success" : "badge-ghost"
                     }`}
                   >
-                    {post.status === "PUBLISHED" ? "Publié" : "Brouillon"}
+                    {evt.status === "PUBLISHED" ? "Publié" : "Brouillon"}
                   </span>
                 </div>
               ))}

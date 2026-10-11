@@ -325,3 +325,34 @@ export async function deleteInteraction(id: string) {
 
   return { success: true };
 }
+
+/**
+ * Marquer tous les nouveaux messages comme lus d'un coup
+ */
+export async function markAllInteractionsAsRead() {
+  await requireAdmin();
+
+  try {
+    await (prisma as any).videoInteraction.updateMany({
+      where: { status: "NEW" },
+      data: { status: "READ" },
+    });
+  } catch {
+    // fallback local
+  }
+
+  const local = await ensureDataFile();
+  for (const item of local) {
+    if (item.status === "NEW") {
+      item.status = "READ";
+      item.updatedAt = new Date().toISOString();
+    }
+  }
+  await saveDataFile(local);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/interactions");
+
+  return { success: true };
+}
+

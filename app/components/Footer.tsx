@@ -5,6 +5,8 @@ import Link from "next/link";
 import { MapPin, Phone, Youtube, Cross, Shield } from "lucide-react";
 import { usePathname } from "next/navigation";
 import gsap from "gsap";
+import logo from "../../public/images/logo.png"
+import Image from "next/image"
 
 import { CHURCH_SOCIAL_LINKS } from "@/lib/church-info";
 export { CHURCH_SOCIAL_LINKS };
@@ -81,9 +83,12 @@ export default function Footer() {
           {/* Col 1 : Identité & Présentation */}
           <div className="footer-col space-y-3">
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-content shadow-xs">
-                <Cross className="h-4 w-4" />
-              </div>
+              <div className="flex h-9 w-9 items-center justify-center text-primary-content shadow-xs">
+                          <Image
+                            src={logo}
+                            alt="logo"
+                            className="object-cover" />
+                        </div>
               <span className="font-black text-base tracking-tight">Assemblée Chrétienne</span>
             </Link>
             <p className="text-xs sm:text-sm text-base-content/70 leading-relaxed">
@@ -133,7 +138,7 @@ export default function Footer() {
               Cultes &amp; Rassemblements
             </h3>
             <div className="space-y-2 text-xs sm:text-sm text-base-content/75">
-              <p><strong className="text-base-content">Dimanche :</strong> 08h00 – 14h00</p>
+              <p><strong className="text-base-content">Dimanche :</strong> 09h00 – 1h00</p>
               <p><strong className="text-base-content">Vendredi :</strong> 09h00 – 14h00 &amp; 15h00 – 17h00</p>
               <p><strong className="text-base-content">Mardi &amp; Mercredi :</strong> 15h00 – 17h00</p>
             </div>

@@ -4,7 +4,7 @@ import InteractionsManager from "./InteractionsManager";
 import { MessageSquareHeart } from "lucide-react";
 
 export const metadata = {
-  title: "Interactions & Salutations Prédications | Administration",
+  title: "Messages reçus des fidèles | Administration",
 };
 
 export default async function AdminInteractionsPage() {
@@ -23,24 +23,26 @@ export default async function AdminInteractionsPage() {
 
   return (
     <div className="space-y-6">
-      {/* En-tête de la page */}
+      {/* En-tête simple et humain */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-base-300 pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/15 text-accent">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <MessageSquareHeart className="h-5 w-5" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-base-content">
-              Interactions & Salutations
-            </h1>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-base-content">
+                Messages reçus des fidèles
+              </h1>
+              <p className="text-xs sm:text-sm text-base-content/65 mt-0.5">
+                Retrouvez ici les salutations, remerciements et questions envoyés par les fidèles sous les vidéos.
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-base-content/65 mt-1.5">
-            Consultez, traitez et archivez les commentaires et salutations laissés par les fidèles et visiteurs sur les prédications vidéos.
-          </p>
         </div>
       </div>
 
-      {/* Gestionnaire interactif avec filtres et actions */}
+      {/* Gestionnaire simplifié */}
       <InteractionsManager
         initialInteractions={interactions}
         groupedByVideo={stats.groupedByVideo}

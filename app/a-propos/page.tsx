@@ -1,11 +1,11 @@
 import Image from "next/image";
-import { Heart, BookOpen, Users, Cross, Calendar, MapPin, Sparkles, Quote as QuoteIcon, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { Heart, BookOpen, Users, Cross, Calendar, MapPin, Sparkles, Quote as QuoteIcon, MessageCircle, ArrowRight } from "lucide-react";
 import { getPublicSermonQuotes } from "@/actions/quotes";
 import type { Metadata } from "next";
 import QuotesCarousel from "./QuotesCarousel";
 import ProgramsSchedule from "./ProgramsSchedule";
 import { TeamShowcase, ChurchLifeGallery } from "./TeamGallery";
-import WhatsAppContactForm from "@/app/components/WhatsAppContactForm";
 import bg from "../../public/images/church.webp"
 
 export const metadata: Metadata = {
@@ -207,28 +207,28 @@ export default async function AboutPage() {
         <QuotesCarousel quotes={displayQuotes} />
       </section>
 
-      {/* Section Contact & Message WhatsApp */}
-      <section className="space-y-8" id="contact-eglise">
+      {/* Section Contact */}
+      <section className="space-y-6" id="contact-eglise">
         <div className="border-b border-base-300 pb-4 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
-            <div className="flex items-center justify-center sm:justify-start gap-2 text-xs font-bold text-emerald-600 uppercase tracking-wider">
-              <MessageCircle className="h-4 w-4" />
-              <span>Contact &amp; Intercession</span>
+            <div className="flex items-center justify-center sm:justify-start gap-2 text-xs font-bold text-primary uppercase tracking-wider">
+              <span>Contact</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-base-content mt-1">
               Envoyer un Message ou une Requête
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-base-content/65 max-w-md text-center sm:text-right">
-            Besoin de prière, d’orientation spirituelle ou d’un échange ? Transmettez directement votre message à nos serviteurs sur WhatsApp.
-          </p>
+          <div>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 rounded-xl border border-base-300 bg-base-100 px-4 py-2.5 text-xs sm:text-sm font-bold text-base-content hover:border-primary hover:text-primary transition shadow-xs"
+            >
+              <MessageCircle className="h-4 w-4 text-primary" />
+              <span>Accéder au contact</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
-
-        <WhatsAppContactForm
-          title="Écrire à l'Assemblée Chrétienne"
-          subtitle="Votre message sera directement préparé et transmis sur WhatsApp au numéro +243 900 163 658."
-          source="a-propos"
-        />
       </section>
     </div>
   );
