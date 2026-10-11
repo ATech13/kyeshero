@@ -14,6 +14,9 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-user";
 import { getInteractionsStats } from "@/actions/interactions";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminDashboardPage() {
   await requireAdmin().catch(() => null);
 

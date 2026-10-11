@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import {
   MessageSquareHeart,
   MessageCircle,
@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Phone,
   RotateCcw,
+  RefreshCw,
 } from "lucide-react";
 import {
   StoredInteraction,
@@ -50,6 +51,11 @@ export default function InteractionsManager({
   const router = useRouter();
   const [interactions, setInteractions] = useState<StoredInteraction[]>(initialInteractions);
 
+  // Synchroniser quand les props serveur changent (revalidation, refresh)
+  useEffect(() => {
+    setInteractions(initialInteractions);
+  }, [initialInteractions]);
+
   // Compteurs
   const unreadCount = interactions.filter((i) => i.status === "NEW").length;
   const archivedCount = interactions.filter((i) => i.status === "ARCHIVED").length;
@@ -61,6 +67,14 @@ export default function InteractionsManager({
   const [selectedVideoId, setSelectedVideoId] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isPending, startTransition] = useTransition();
+
+  // Action : actualiser les messages reçus depuis le serveur
+  const handleRefresh = () => {
+    startTransition(() => {
+      router.refresh();
+      toast.success("Boîte de réception actualisée");
+    });
+  };
 
   // Filtrage simple et lisible
   const filteredList = interactions.filter((item) => {
@@ -221,18 +235,30 @@ export default function InteractionsManager({
           </button>
         </div>
 
-        {/* Bouton rapide "Tout marquer comme lu" */}
-        {unreadCount > 0 && (
+        {/* Actions à droite : Actualiser et Tout marquer comme lu */}
+        <div className="flex items-center gap-2 self-start sm:self-center">
           <button
-            onClick={handleMarkAllAsRead}
+            onClick={handleRefresh}
             disabled={isPending}
-            className="btn btn-sm btn-ghost text-emerald-600 hover:bg-emerald-500/10 font-bold gap-1.5 self-start sm:self-center"
-            title="Marquer tous les messages non lus comme lus"
+            className="btn btn-sm btn-ghost text-base-content/75 hover:text-base-content font-bold gap-1.5 rounded-xl"
+            title="Vérifier et rafraîchir les messages des fidèles"
           >
-            <CheckCheck className="h-4 w-4" />
-            <span>Tout marquer comme lu ({unreadCount})</span>
+            <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
+            <span>Actualiser</span>
           </button>
-        )}
+
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllAsRead}
+              disabled={isPending}
+              className="btn btn-sm btn-ghost text-emerald-600 hover:bg-emerald-500/10 font-bold gap-1.5 rounded-xl"
+              title="Marquer tous les messages non lus comme lus"
+            >
+              <CheckCheck className="h-4 w-4" />
+              <span>Tout marquer comme lu ({unreadCount})</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 2. Barre de recherche et filtres simples */}

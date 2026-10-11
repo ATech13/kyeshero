@@ -150,17 +150,16 @@ export default function UniversalVideoCard({
                 : "Récemment"}
             </span>
 
-            <div className="flex items-center gap-2">
-              <a
-                href={parsed.originalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-base-content/50 hover:text-base-content transition"
-                title={`Ouvrir sur ${parsed.platformLabel}`}
-                onClick={(e) => e.stopPropagation()}
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsOpen(true)}
+                className="inline-flex items-center gap-1 text-xs font-bold text-secondary hover:underline cursor-pointer"
+                title="Envoyer une salutation ou un commentaire sur cette prédication"
               >
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
+                <MessageSquareHeart className="h-3.5 w-3.5" />
+                <span>Saluer</span>
+              </button>
 
               <button
                 type="button"
@@ -170,6 +169,17 @@ export default function UniversalVideoCard({
                 <Play className="h-3 w-3 fill-current" />
                 <span>Regarder</span>
               </button>
+
+              <a
+                href={parsed.originalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-base-content/50 hover:text-base-content transition ml-0.5"
+                title={`Ouvrir sur ${parsed.platformLabel}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
             </div>
           </div>
         </div>

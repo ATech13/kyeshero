@@ -3,6 +3,9 @@ import { getAllAdminInteractions, getInteractionsStats } from "@/actions/interac
 import InteractionsManager from "./InteractionsManager";
 import { MessageSquareHeart } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Messages reçus des fidèles | Administration",
 };
