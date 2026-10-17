@@ -47,7 +47,7 @@ export default function PreachingInteractionForm({
   videoId,
   videoTitle,
 }: PreachingInteractionFormProps) {
-  const [type, setType] = useState<InteractionType>("COMMENT");
+  const [type, setType] = useState<InteractionType>("GREETING");
   const [authorName, setAuthorName] = useState("");
   const [contact, setContact] = useState("");
   const [content, setContent] = useState("");
@@ -119,9 +119,6 @@ export default function PreachingInteractionForm({
           <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
             Interaction
           </span>
-          <span className="text-[10px] text-base-content/50">
-            Transmis à l'équipe pastorale
-          </span>
         </div>
         <h4 className="text-sm font-black text-base-content mt-0.5">
           Partager un message ou saluer
@@ -156,19 +153,6 @@ export default function PreachingInteractionForm({
             <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-base-200 border border-base-300/60">
               <button
                 type="button"
-                onClick={() => setType("COMMENT")}
-                className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition ${
-                  type === "COMMENT"
-                    ? "bg-base-100 text-primary shadow-xs"
-                    : "text-base-content/70 hover:text-base-content"
-                }`}
-              >
-                <MessageSquare className="h-3.5 w-3.5" />
-                <span>Commentaire</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setType("GREETING")}
                 className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition ${
                   type === "GREETING"
@@ -182,12 +166,21 @@ export default function PreachingInteractionForm({
                   <Volume2 className="h-3 w-3 opacity-60" />
                 </span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setType("COMMENT")}
+                className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                  type === "COMMENT"
+                    ? "bg-base-100 text-primary shadow-xs"
+                    : "text-base-content/70 hover:text-base-content"
+                }`}
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>Commentaire</span>
+              </button>
+
             </div>
-            <p className="text-[10px] text-base-content/60 mt-1 pl-1">
-              {type === "COMMENT"
-                ? "Laissez une réflexion, question ou témoignage sur la prédication."
-                : "Envoyez simplement vos salutations fraternelles et bénédictions à l'assemblée."}
-            </p>
           </div>
 
           {/* Champ caché anti-spam (honeypot) */}
@@ -245,8 +238,8 @@ export default function PreachingInteractionForm({
               onChange={(e) => setContent(e.target.value)}
               placeholder={
                 type === "COMMENT"
-                  ? "Que vous a inspiré cette parole ? Posez votre question ou partagez votre pensée..."
-                  : "Salutations fraternelles à toute l'église depuis... Que la paix soit avec vous !"
+                  ? "Commentez ici..."
+                  : "Saluez ici..."
               }
               className="textarea textarea-bordered w-full rounded-xl text-xs leading-relaxed bg-base-100"
             />
