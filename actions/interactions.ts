@@ -49,7 +49,7 @@ const submitSchema = z.object({
   honeypot: z.string().nullish(),
 });
 
-// Emplacement de stockage résilient (garantit la persistance même si la connexion distante est indisponible)
+// Emplacement de stockage résilient (garantit la persistance en mode dev / fallback)
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "interactions.json");
 
@@ -67,9 +67,42 @@ async function saveDataFile(items: StoredInteraction[]): Promise<void> {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.writeFile(DATA_FILE, JSON.stringify(items, null, 2), "utf-8");
-  } catch (err) {
-    console.error("Erreur sauvegarde interactions locales:", err);
+  } catch (err: any) {
+    // Si nous sommes en environnement serverless (ex: Vercel read-only filesystem), ne pas interrompre l'exécution
+    if (err?.code !== "EROFS") {
+      console.warn("Sauvegarde locale ignorée:", err?.message || err);
+    }
   }
+}
+
+/**
+ * Résout si l'identifiant passé correspond à un enregistrement existant dans YouTubeVideo.
+ * Cela évite toute violation de contrainte de clé étrangère dans PostgreSQL.
+ */
+async function resolveVideo(rawVideoId?: string | null): Promise<{
+  matchedVideoId: string | null;
+  videoTitleFallback?: string;
+}> {
+  if (!rawVideoId || rawVideoId === "general_preaching") {
+    return { matchedVideoId: null };
+  }
+
+  try {
+    const video = await prisma.youTubeVideo.findFirst({
+      where: {
+        OR: [{ id: rawVideoId }, { youtubeVideoId: rawVideoId }],
+      },
+      select: { id: true, title: true },
+    });
+
+    if (video) {
+      return { matchedVideoId: video.id, videoTitleFallback: video.title };
+    }
+  } catch {
+    // Si la recherche échoue, on continue sans relation forcée
+  }
+
+  return { matchedVideoId: null };
 }
 
 /**
@@ -97,10 +130,17 @@ export async function submitInteraction(data: {
   const interactionId = `int_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
   const nowIso = new Date().toISOString();
 
+  // 1. Résolution de la vidéo pour sécuriser les clés étrangères PostgreSQL
+  const { matchedVideoId, videoTitleFallback } = await resolveVideo(validated.videoId);
+  const finalTitle =
+    validated.videoTitle && validated.videoTitle !== "Prédication de l'église"
+      ? validated.videoTitle
+      : videoTitleFallback || validated.videoTitle || "Prédication";
+
   const newRecord: StoredInteraction = {
     id: interactionId,
-    videoId: validated.videoId,
-    videoTitle: validated.videoTitle,
+    videoId: matchedVideoId || validated.videoId || "general_preaching",
+    videoTitle: finalTitle,
     type: validated.type,
     status: "NEW",
     authorName: validated.authorName,
@@ -110,18 +150,14 @@ export async function submitInteraction(data: {
     updatedAt: nowIso,
   };
 
-  // 1. Toujours enregistrer immédiatement dans le stockage persistant local pour garantie absolue
-  const localItems = await ensureDataFile();
-  localItems.unshift(newRecord);
-  await saveDataFile(localItems);
-
-  // 2. Synchroniser dans Prisma si la base et la table sont prêtes
+  // 2. Enregistrement prioritaire dans PostgreSQL via Prisma
+  let savedInPrisma = false;
   try {
-    await (prisma as any).videoInteraction.create({
+    await prisma.videoInteraction.create({
       data: {
         id: interactionId,
-        videoId: validated.videoId,
-        videoTitle: validated.videoTitle,
+        videoId: matchedVideoId,
+        videoTitle: finalTitle,
         type: validated.type,
         status: "NEW",
         authorName: validated.authorName,
@@ -129,12 +165,28 @@ export async function submitInteraction(data: {
         content: validated.content,
       },
     });
+    savedInPrisma = true;
   } catch (err) {
-    // Si la table distante n'est pas encore créée ou injoignable, le stockage local a déjà sécurisé le message
-    console.warn("Prisma non accessible pour interaction, conservation sur stockage local:", err);
+    console.error("Erreur enregistrement Prisma interaction:", err);
   }
 
-  // 3. Rafraîchir les chemins dans le cache Next.js
+  // 3. Sauvegarde dans le fichier local (utile en dev local et backup secondaire)
+  try {
+    const localItems = await ensureDataFile();
+    localItems.unshift(newRecord);
+    await saveDataFile(localItems);
+  } catch {
+    // ignore read-only fs
+  }
+
+  // Si l'écriture base de données a échoué en production, avertir l'utilisateur proprement
+  if (!savedInPrisma && process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Une erreur technique est survenue lors de l'enregistrement de votre message. Veuillez réessayer dans quelques instants."
+    );
+  }
+
+  // 4. Rafraîchir les chemins dans le cache Next.js
   try {
     revalidatePath("/");
     revalidatePath("/contenus");
@@ -169,40 +221,65 @@ export async function getAllAdminInteractions(options?: {
     // Si l'utilisateur est déjà dans le layout admin ou en mode dev, ne pas bloquer l'affichage
   }
 
-  // 1. Charger la liste complète des messages depuis le stockage persistant local
-  const localItems = await ensureDataFile();
   const mapById = new Map<string, StoredInteraction>();
 
-  for (const item of localItems) {
-    mapById.set(item.id, item);
-  }
-
-  // 2. Synchroniser et fusionner avec Prisma si la table est accessible
+  // 1. Charger depuis la base de données PostgreSQL via Prisma (source de vérité)
   try {
-    const prismaItems = await (prisma as any).videoInteraction.findMany({
+    const prismaItems = await prisma.videoInteraction.findMany({
       orderBy: { createdAt: "desc" },
     });
 
     if (Array.isArray(prismaItems) && prismaItems.length > 0) {
       for (const p of prismaItems) {
-        if (!mapById.has(p.id)) {
-          mapById.set(p.id, {
-            id: p.id,
-            videoId: p.videoId || "general_preaching",
-            videoTitle: p.videoTitle || "Prédication",
-            type: p.type || "COMMENT",
-            status: p.status || "NEW",
-            authorName: p.authorName || "Fidèle",
-            contact: p.contact || null,
-            content: p.content || "",
-            createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
-            updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : new Date().toISOString(),
+        mapById.set(p.id, {
+          id: p.id,
+          videoId: p.videoId || "general_preaching",
+          videoTitle: p.videoTitle || "Prédication",
+          type: (p.type as InteractionType) || "COMMENT",
+          status: (p.status as InteractionStatus) || "NEW",
+          authorName: p.authorName || "Fidèle",
+          contact: p.contact || null,
+          content: p.content || "",
+          createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
+          updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : new Date().toISOString(),
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("Prisma indisponible pour getAllAdminInteractions, utilisation du stockage de secours:", err);
+  }
+
+  // 2. Fusionner avec le stockage local (synchronise également vers Prisma si des messages locaux manquent)
+  try {
+    const localItems = await ensureDataFile();
+    for (const item of localItems) {
+      if (!mapById.has(item.id)) {
+        mapById.set(item.id, item);
+
+        // Synchroniser vers Prisma en arrière-plan pour migrer les messages historiques
+        try {
+          const { matchedVideoId } = await resolveVideo(item.videoId);
+          await prisma.videoInteraction.create({
+            data: {
+              id: item.id,
+              videoId: matchedVideoId,
+              videoTitle: item.videoTitle,
+              type: item.type,
+              status: item.status,
+              authorName: item.authorName,
+              contact: item.contact,
+              content: item.content,
+              createdAt: new Date(item.createdAt),
+              updatedAt: new Date(item.updatedAt),
+            },
           });
+        } catch {
+          // Si déjà inséré ou DB indisponible, ignorer
         }
       }
     }
   } catch {
-    // Prisma indisponible ou table non créée : le stockage persistant local reste la source de vérité
+    // ignore local file reading errors
   }
 
   // 3. Obtenir la liste unifiée et trier par date décroissante (plus récents en premier)
@@ -300,23 +377,27 @@ export async function updateInteractionStatus(id: string, status: InteractionSta
     // ignore
   }
 
-  // 1. Toujours mettre à jour le stockage persistant local
-  const local = await ensureDataFile();
-  const idx = local.findIndex((i) => i.id === id);
-  if (idx !== -1) {
-    local[idx].status = status;
-    local[idx].updatedAt = new Date().toISOString();
-    await saveDataFile(local);
-  }
-
-  // 2. Synchroniser dans Prisma si possible
+  // 1. Mettre à jour en priorité dans Prisma
   try {
-    await (prisma as any).videoInteraction.update({
+    await prisma.videoInteraction.update({
       where: { id },
       data: { status },
     });
+  } catch (err) {
+    console.warn("Erreur mise à jour statut dans Prisma:", err);
+  }
+
+  // 2. Mettre à jour le fichier local si accessible
+  try {
+    const local = await ensureDataFile();
+    const idx = local.findIndex((i) => i.id === id);
+    if (idx !== -1) {
+      local[idx].status = status;
+      local[idx].updatedAt = new Date().toISOString();
+      await saveDataFile(local);
+    }
   } catch {
-    // fallback local
+    // ignore
   }
 
   try {
@@ -339,18 +420,22 @@ export async function deleteInteraction(id: string) {
     // ignore
   }
 
-  // 1. Toujours supprimer du stockage persistant local
-  const local = await ensureDataFile();
-  const filtered = local.filter((i) => i.id !== id);
-  await saveDataFile(filtered);
-
-  // 2. Supprimer de Prisma si possible
+  // 1. Supprimer en priorité dans Prisma
   try {
-    await (prisma as any).videoInteraction.delete({
+    await prisma.videoInteraction.delete({
       where: { id },
     });
+  } catch (err) {
+    console.warn("Erreur suppression dans Prisma:", err);
+  }
+
+  // 2. Supprimer du fichier local si accessible
+  try {
+    const local = await ensureDataFile();
+    const filtered = local.filter((i) => i.id !== id);
+    await saveDataFile(filtered);
   } catch {
-    // fallback local
+    // ignore
   }
 
   try {
@@ -373,24 +458,28 @@ export async function markAllInteractionsAsRead() {
     // ignore
   }
 
-  // 1. Mettre à jour le stockage persistant local
-  const local = await ensureDataFile();
-  for (const item of local) {
-    if (item.status === "NEW") {
-      item.status = "READ";
-      item.updatedAt = new Date().toISOString();
-    }
-  }
-  await saveDataFile(local);
-
-  // 2. Mettre à jour Prisma si possible
+  // 1. Mettre à jour Prisma en priorité
   try {
-    await (prisma as any).videoInteraction.updateMany({
+    await prisma.videoInteraction.updateMany({
       where: { status: "NEW" },
       data: { status: "READ" },
     });
+  } catch (err) {
+    console.warn("Erreur markAllInteractionsAsRead dans Prisma:", err);
+  }
+
+  // 2. Mettre à jour le fichier local si accessible
+  try {
+    const local = await ensureDataFile();
+    for (const item of local) {
+      if (item.status === "NEW") {
+        item.status = "READ";
+        item.updatedAt = new Date().toISOString();
+      }
+    }
+    await saveDataFile(local);
   } catch {
-    // fallback local
+    // ignore
   }
 
   try {

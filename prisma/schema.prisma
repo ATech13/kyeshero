@@ -293,7 +293,7 @@ model YouTubeVideo {
 model VideoInteraction {
   id String @id @default(cuid())
 
-  videoId    String
+  videoId    String?
   videoTitle String?
 
   type   InteractionType   @default(COMMENT)
@@ -306,7 +306,7 @@ model VideoInteraction {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  video YouTubeVideo? @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  video YouTubeVideo? @relation(fields: [videoId], references: [id], onDelete: SetNull)
 
   @@index([videoId])
   @@index([type])
