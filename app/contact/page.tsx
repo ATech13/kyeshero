@@ -15,6 +15,15 @@ export default function ContactPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-5">
+
+        <div className="lg:col-span-3">
+          <WhatsAppContactForm
+            title="Envoyer un message à l’église"
+            subtitle=""
+            source="contact"
+          />
+        </div>
+
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-start gap-4 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs hover:border-primary/40 transition">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -37,33 +46,11 @@ export default function ContactPage() {
               <p className="text-sm font-semibold text-base-content mt-0.5">
                 +243 900 163 658
               </p>
-              {/* <div className="flex flex-wrap gap-2 pt-1">
-                <a
-                  href="tel:+243900163658"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
-                >
-                  Appeler
-                </a>
-                <span className="text-base-content/30">·</span>
-                <a
-                  href="https://wa.me/243900163658"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:underline"
-                >
-                  <MessageCircle className="h-3 w-3" />
-                  WhatsApp direct
-                </a>
-              </div> */}
             </div>
           </div>
 
           <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs space-y-3">
             <h3 className="font-bold text-base text-base-content">Nos Plateformes Officielles</h3>
-            <p className="text-xs text-base-content/65">
-              Rejoignez la communauté en ligne sur nos réseaux officiels :
-            </p>
-
             <div className="grid gap-2.5 pt-1">
               {/* YouTube */}
               <a
@@ -118,14 +105,6 @@ export default function ContactPage() {
               </a>
             </div>
           </div>
-        </div>
-
-        <div className="lg:col-span-3">
-          <WhatsAppContactForm
-            title="Envoyer un message à l’église"
-            subtitle="Remplissez ce formulaire pour envoyer votre requête de prière ou message directement sur WhatsApp."
-            source="contact"
-          />
         </div>
       </div>
     </div>

@@ -1,265 +1,262 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Pencil, Trash2, Calendar, Newspaper, MapPin, Clock, Layers, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Camera, Search, ThumbsUp, Image as ImageIcon, Calendar, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { deleteEvent } from "@/actions/events";
-import { deletePost } from "@/actions/posts";
+import { deletePhotoPublication } from "@/actions/events";
 import EventFormModal from "./EventFormModal";
 import Image from "next/image";
+import Link from "next/link";
 
 interface EventsClientListProps {
   initialEvents: any[];
 }
 
 export default function EventsClientList({ initialEvents }: EventsClientListProps) {
-  const [events, setEvents] = useState<any[]>(initialEvents);
-  const [filterTab, setFilterTab] = useState<"ALL" | "EVENT" | "NEWS">("ALL");
+  const [publications, setPublications] = useState<any[]>(initialEvents);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<any | null>(null);
+  const [editingPublication, setEditingPublication] = useState<any | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    setEvents(initialEvents);
+    setPublications(initialEvents);
   }, [initialEvents]);
 
-  const eventCount = useMemo(
-    () => events.filter((e) => e.type !== "NEWS").length,
-    [events]
-  );
-  const newsCount = useMemo(
-    () => events.filter((e) => e.type === "NEWS").length,
-    [events]
+  const totalLikes = useMemo(
+    () => publications.reduce((acc, p) => acc + (p.likesCount ?? 0), 0),
+    [publications]
   );
 
-  const filteredEvents = useMemo(() => {
-    if (filterTab === "EVENT") return events.filter((e) => e.type !== "NEWS");
-    if (filterTab === "NEWS") return events.filter((e) => e.type === "NEWS");
-    return events;
-  }, [events, filterTab]);
+  const filteredPublications = useMemo(() => {
+    if (!searchQuery.trim()) return publications;
+    const q = searchQuery.toLowerCase();
+    return publications.filter(
+      (p) =>
+        p.title?.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q)
+    );
+  }, [publications, searchQuery]);
 
   const handleOpenCreate = () => {
-    setEditingEvent(null);
+    setEditingPublication(null);
     setModalOpen(true);
   };
 
   const handleOpenEdit = (item: any) => {
-    setEditingEvent(item);
+    setEditingPublication(item);
     setModalOpen(true);
   };
 
-  const handleDelete = async (id: string, title: string, type?: string) => {
-    const isNews = type === "NEWS";
-    if (!confirm(`Confirmez-vous la suppression de ${isNews ? "l'actualité" : "l'événement"} « ${title} » ?`)) {
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`Confirmez-vous la suppression de cette publication photo ?\n« ${title.slice(0, 50)}... »`)) {
       return;
     }
 
     try {
       setDeletingId(id);
-      if (isNews) {
-        await deletePost(id);
-      } else {
-        await deleteEvent(id);
-      }
-      setEvents((prev) => prev.filter((e) => e.id !== id));
-      toast.success(isNews ? "Actualité supprimée avec succès" : "Événement supprimé avec succès");
+      await deletePhotoPublication(id);
+      setPublications((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Publication photo supprimée avec succès");
     } catch (err: any) {
-      toast.error(err.message || "Impossible de supprimer l'élément");
+      toast.error(err.message || "Impossible de supprimer la publication");
     } finally {
       setDeletingId(null);
     }
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       {/* En-tête */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-base-content">
-            Gestion des Événements &amp; Actualités
+          <h1 className="text-xl sm:text-2xl font-black text-base-content flex items-center gap-2">
+            <Camera className="h-6 w-6 text-primary" />
+            <span>Gestion des Événements &amp; Photos</span>
           </h1>
-          <p className="text-xs sm:text-sm text-base-content/65 mt-0.5">
-            Publiez et organisez les cultes, séminaires et actualités visibles par la communauté.
+          <p className="text-xs sm:text-sm text-base-content/65 mt-1">
+            Publiez les photos des cultes, sainte cène et moments forts selon le format social en mosaïque.
           </p>
         </div>
 
         <button
           onClick={handleOpenCreate}
-          className="btn btn-primary btn-sm rounded-xl font-bold shadow-xs gap-1.5 w-full sm:w-auto"
+          className="btn btn-primary btn-sm rounded-xl font-bold shadow-xs gap-2 shrink-0 self-start sm:self-auto"
         >
           <Plus className="h-4 w-4" />
-          <span>Créer (Événement / Actualité)</span>
+          <span>Nouvelle Publication Photo</span>
         </button>
       </div>
 
-      {/* Onglets de filtrage */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
-        <button
-          onClick={() => setFilterTab("ALL")}
-          className={`btn btn-xs sm:btn-sm rounded-xl font-bold shrink-0 gap-1.5 ${
-            filterTab === "ALL" ? "btn-primary shadow-xs" : "btn-ghost"
-          }`}
-        >
-          <Layers className="h-3.5 w-3.5" />
-          <span>Tous</span>
-          <span className="badge badge-xs sm:badge-sm badge-neutral">{events.length}</span>
-        </button>
+      {/* Barre de recherche & Statistiques (avec les likes visibles) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-base-100 p-3 sm:p-4 rounded-2xl border border-base-200">
+        <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-base-content/70">
+          <div className="flex items-center gap-1.5">
+            <ImageIcon className="h-4 w-4 text-primary" />
+            <span>{publications.length} publication{publications.length > 1 ? "s" : ""}</span>
+          </div>
+          <span className="text-base-content/30">•</span>
+          <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-xl border border-blue-200/50">
+            <ThumbsUp className="h-3.5 w-3.5 fill-blue-600" />
+            <span>{totalLikes} mention{totalLikes > 1 ? "s" : ""} J'aime au total</span>
+          </div>
+        </div>
 
-        <button
-          onClick={() => setFilterTab("EVENT")}
-          className={`btn btn-xs sm:btn-sm rounded-xl font-bold shrink-0 gap-1.5 ${
-            filterTab === "EVENT" ? "btn-primary shadow-xs" : "btn-ghost"
-          }`}
-        >
-          <Calendar className="h-3.5 w-3.5" />
-          <span>Événements &amp; Cultes</span>
-          <span className="badge badge-xs sm:badge-sm badge-neutral">{eventCount}</span>
-        </button>
-
-        <button
-          onClick={() => setFilterTab("NEWS")}
-          className={`btn btn-xs sm:btn-sm rounded-xl font-bold shrink-0 gap-1.5 ${
-            filterTab === "NEWS" ? "btn-primary shadow-xs" : "btn-ghost"
-          }`}
-        >
-          <Newspaper className="h-3.5 w-3.5" />
-          <span>Actualités &amp; Annonces</span>
-          <span className="badge badge-xs sm:badge-sm badge-neutral">{newsCount}</span>
-        </button>
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/40" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Rechercher une publication..."
+            className="input input-sm w-full pl-9 rounded-xl bg-base-200/50 border-base-300 text-xs focus:outline-none focus:border-primary"
+          />
+        </div>
       </div>
 
       {/* Liste des publications */}
-      {filteredEvents.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-8 sm:p-12 text-center">
-          <Calendar className="h-10 w-10 text-base-content/30 mx-auto mb-3" />
-          <h3 className="font-bold text-base">Aucun contenu trouvé</h3>
-          <p className="text-xs text-base-content/60 mt-1 max-w-sm mx-auto">
-            {filterTab === "EVENT"
-              ? "Aucun culte ou événement enregistré."
-              : filterTab === "NEWS"
-              ? "Aucune actualité ou annonce enregistrée."
-              : "Commencez par ajouter votre premier culte ou votre première annonce."}
+      {filteredPublications.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 p-12 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4">
+            <Camera className="h-7 w-7" />
+          </div>
+          <h3 className="text-base font-bold text-base-content">
+            {searchQuery ? "Aucune publication trouvée" : "Aucune publication photo"}
+          </h3>
+          <p className="text-xs sm:text-sm text-base-content/60 mt-1 max-w-sm mx-auto">
+            {searchQuery
+              ? `Aucun résultat ne correspond à « ${searchQuery} ».`
+              : "Créez votre première publication photo avec le texte et les clichés de l'événement."}
           </p>
-          <button
-            onClick={handleOpenCreate}
-            className="btn btn-primary btn-sm rounded-xl font-bold mt-4"
-          >
-            Ajouter un contenu
-          </button>
+          {!searchQuery && (
+            <button
+              onClick={handleOpenCreate}
+              className="btn btn-primary btn-sm rounded-xl font-bold mt-5 gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Créer une publication photo</span>
+            </button>
+          )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-xs">
-          <div className="divide-y divide-base-200">
-            {filteredEvents.map((item) => {
-              const isNews = item.type === "NEWS";
-              const dateVal = item.startAt || item.date || item.createdAt;
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredPublications.map((item) => {
+            const images = item.images || [];
+            const cover = item.coverImageUrl || images[0]?.imageUrl;
 
-              return (
-                <div
-                  key={item.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-5 hover:bg-base-200/40 transition"
-                >
-                  <div className="flex items-start gap-3 sm:gap-4 min-w-0 w-full sm:w-auto flex-1">
-                    {item.coverImageUrl ? (
-                      <div className="relative h-16 w-16 sm:h-16 sm:w-24 shrink-0 overflow-hidden rounded-xl bg-base-200">
-                        <Image
-                          src={item.coverImageUrl}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className={`flex h-16 w-16 sm:h-16 sm:w-24 shrink-0 items-center justify-center rounded-xl ${
-                        isNews ? "bg-secondary/10 text-secondary" : "bg-primary/10 text-primary"
-                      }`}>
-                        {isNews ? <Newspaper className="h-6 w-6" /> : <Calendar className="h-6 w-6" />}
-                      </div>
-                    )}
-
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span
-                          className={`badge badge-xs font-bold ${
-                            isNews ? "badge-secondary" : "badge-primary"
-                          }`}
-                        >
-                          {isNews ? "📰 Actualité" : "📅 Événement"}
-                        </span>
-
-                        <span
-                          className={`badge badge-xs font-bold ${
-                            item.status === "PUBLISHED" ? "badge-success text-success-content" : "badge-ghost"
-                          }`}
-                        >
-                          {item.status === "PUBLISHED" ? "Publié" : "Brouillon"}
-                        </span>
-                      </div>
-
-                      <h3 className="font-bold text-sm sm:text-base text-base-content leading-snug line-clamp-2 break-words">
-                        {item.title}
-                      </h3>
-
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/65 pt-0.5">
-                        {dateVal && (
-                          <span className="inline-flex items-center gap-1 shrink-0">
-                            <Clock className="h-3 w-3 shrink-0" />
-                            {new Date(dateVal).toLocaleDateString("fr-FR", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                              hour: isNews ? undefined : "2-digit",
-                              minute: isNews ? undefined : "2-digit",
-                            })}
-                          </span>
-                        )}
-
-                        {item.location && !isNews && (
-                          <span className="inline-flex items-center gap-1 min-w-0 max-w-[190px] sm:max-w-xs">
-                            <MapPin className="h-3 w-3 shrink-0" />
-                            <span className="truncate">{item.location}</span>
-                          </span>
-                        )}
-
-                        {isNews && item.category && (
-                          <span className="inline-flex items-center gap-1 text-secondary font-medium shrink-0">
-                            <Tag className="h-3 w-3 shrink-0" />
-                            <span>{item.category}</span>
-                          </span>
-                        )}
-                      </div>
+            return (
+              <div
+                key={item.id}
+                className="group flex flex-col justify-between rounded-2xl border border-base-200 bg-base-100 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-200"
+              >
+                {/* Aperçu image(s) */}
+                <div className="relative aspect-video w-full bg-neutral-900 overflow-hidden">
+                  {cover ? (
+                    <Image
+                      src={cover}
+                      alt={item.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-white/40">
+                      <ImageIcon className="h-10 w-10" />
                     </div>
+                  )}
+
+                  {/* Badge nombre de likes sur l'image */}
+                  <div className="absolute top-2.5 left-2.5 bg-blue-600/90 text-white text-[11px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
+                    <ThumbsUp className="h-3 w-3 fill-white" />
+                    <span>{item.likesCount ?? 0}</span>
                   </div>
 
-                  <div className="flex items-center justify-end gap-1 shrink-0 self-end sm:self-center w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-base-200">
-                    <button
-                      onClick={() => handleOpenEdit(item)}
-                      className="btn btn-ghost btn-square btn-sm"
-                      title="Modifier"
+                  {/* Badge nombre de photos */}
+                  <div className="absolute bottom-2.5 left-2.5 bg-black/60 backdrop-blur-xs text-white text-[11px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
+                    <Camera className="h-3 w-3" />
+                    <span>{images.length} photo{images.length > 1 ? "s" : ""}</span>
+                  </div>
+
+                  {/* Badge Statut */}
+                  <div className="absolute top-2.5 right-2.5">
+                    <span
+                      className={`badge badge-sm font-bold shadow-xs ${
+                        item.status === "PUBLISHED"
+                          ? "badge-success text-white"
+                          : "badge-warning"
+                      }`}
                     >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id, item.title, item.type)}
-                      disabled={deletingId === item.id}
-                      className="btn btn-ghost btn-square btn-sm text-error hover:bg-error/10"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                      {item.status === "PUBLISHED" ? "Publié" : "Brouillon"}
+                    </span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Corps de la carte */}
+                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-[11px] text-base-content/60">
+                      <Calendar className="h-3 w-3 shrink-0" />
+                      <span>
+                        {new Date(item.publishedAt || item.createdAt).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+
+                    <p className="font-bold text-sm text-base-content line-clamp-3 leading-snug">
+                      {item.title}
+                    </p>
+                  </div>
+
+                  {/* Barre basse statistiques & actions */}
+                  <div className="pt-3 border-t border-base-200 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-xl border border-blue-200/50">
+                      <ThumbsUp className="h-3.5 w-3.5 fill-blue-600" />
+                      <span>{item.likesCount ?? 0} like{(item.likesCount ?? 0) > 1 ? "s" : ""}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Link
+                        href={`/evenements/${item.slug}`}
+                        target="_blank"
+                        className="btn btn-ghost btn-xs btn-square rounded-lg text-base-content/70 hover:text-primary"
+                        title="Voir la publication sur le site"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Link>
+
+                      <button
+                        onClick={() => handleOpenEdit(item)}
+                        className="btn btn-ghost btn-xs btn-square rounded-lg text-base-content/70 hover:text-primary"
+                        title="Modifier la publication"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(item.id, item.title)}
+                        disabled={deletingId === item.id}
+                        className="btn btn-ghost btn-xs btn-square rounded-lg text-error hover:bg-error/10"
+                        title="Supprimer la publication"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Modal de création / édition avec sélecteur Événement / Actualité */}
+      {/* Modal de création et édition */}
       <EventFormModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        eventToEdit={editingEvent}
+        eventToEdit={editingPublication}
       />
     </div>
   );

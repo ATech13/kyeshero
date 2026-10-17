@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Calendar,
+  Camera,
   Headphones,
   Video,
   Radio,
@@ -98,7 +99,7 @@ export default async function AdminLayout({
     { label: "Tableau de bord", href: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
     { label: "Contenus (Vidéos & Audios)", href: "/admin/contenus", icon: <Radio className="h-4 w-4" /> },
     { label: "Citations de Prédications", href: "/admin/citations", icon: <Quote className="h-4 w-4" /> },
-    { label: "Événements & Actualités", href: "/admin/evenements", icon: <Calendar className="h-4 w-4" /> },
+    { label: "Événements & Photos", href: "/admin/evenements", icon: <Camera className="h-4 w-4" /> },
     { label: "Messages des fidèles", href: "/admin/interactions", icon: <MessageSquareHeart className="h-4 w-4" /> },
   ];
 

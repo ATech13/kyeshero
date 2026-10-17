@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Calendar,
+  Camera,
   Headphones,
   Video,
   Plus,
@@ -29,13 +30,14 @@ export default async function AdminDashboardPage() {
     recentQuotes,
     interactionStats,
   ] = await Promise.all([
-    prisma.event.count().catch(() => 0),
+    prisma.post.count().catch(() => 0),
     prisma.sermonQuote.count().catch(() => 0),
     prisma.media.count().catch(() => 0),
     prisma.youTubeVideo.count().catch(() => 0),
-    prisma.event.findMany({
+    prisma.post.findMany({
       take: 3,
       orderBy: { createdAt: "desc" },
+      include: { images: true },
     }).catch(() => []),
     prisma.sermonQuote.findMany({
       take: 3,
@@ -75,8 +77,8 @@ export default async function AdminDashboardPage() {
             href="/admin/evenements"
             className="btn btn-outline btn-sm rounded-xl font-bold gap-1.5"
           >
-            <Plus className="h-4 w-4" />
-            <span>Nouvel Événement</span>
+            <Camera className="h-4 w-4" />
+            <span>Nouvelle Photo / Publication</span>
           </Link>
           <Link
             href="/admin/citations"
@@ -90,27 +92,27 @@ export default async function AdminDashboardPage() {
 
       {/* Cartes de statistiques & Raccourcis (Grille 5 colonnes) */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {/* 1. Événements & Actualités */}
+        {/* 1. Événements & Photos */}
         <Link
           href="/admin/evenements"
           className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-xs hover:border-primary/50 transition group space-y-3"
         >
           <div className="flex items-center justify-between">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-105 transition">
-              <Calendar className="h-5 w-5" />
+              <Camera className="h-5 w-5" />
             </span>
             <span className="text-2xl font-black text-base-content">
               {eventCount}
             </span>
           </div>
           <div>
-            <h3 className="font-bold text-sm text-base-content">Événements &amp; Cultes</h3>
+            <h3 className="font-bold text-sm text-base-content">Événements &amp; Photos</h3>
             <p className="text-[11px] text-base-content/60 mt-0.5 line-clamp-1">
-              Cultes spéciaux, veillées, retraites.
+              Photos des cultes, sainte cène &amp; conventions.
             </p>
           </div>
           <div className="pt-1 text-xs font-bold text-primary flex items-center gap-1 group-hover:underline">
-            <span>Gérer les rassemblements</span>
+            <span>Gérer les publications</span>
             <ArrowRight className="h-3 w-3" />
           </div>
         </Link>
@@ -225,13 +227,13 @@ export default async function AdminDashboardPage() {
 
       {/* Récemment créés : 2 colonnes (Événements & Citations) */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Derniers Événements */}
+        {/* Dernières Publications Photos */}
         <div className="rounded-2xl border border-base-300 bg-base-100 p-4 sm:p-6 space-y-4 overflow-hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <Calendar className="h-4 w-4 text-primary shrink-0" />
+              <Camera className="h-4 w-4 text-primary shrink-0" />
               <h2 className="text-sm sm:text-base font-bold text-base-content truncate">
-                Derniers événements &amp; actualités
+                Dernières publications photos
               </h2>
             </div>
             <Link
@@ -244,7 +246,7 @@ export default async function AdminDashboardPage() {
 
           {recentEvents.length === 0 ? (
             <p className="text-xs text-base-content/60 py-4">
-              Aucun événement programmé pour le moment.
+              Aucune publication photo pour le moment.
             </p>
           ) : (
             <div className="divide-y divide-base-200">
@@ -257,16 +259,11 @@ export default async function AdminDashboardPage() {
                     <h4 className="font-bold text-xs sm:text-sm truncate text-base-content">
                       {evt.title}
                     </h4>
-                    <p className="text-[11px] text-base-content/60 flex flex-wrap items-center gap-1.5 mt-0.5">
-                      {evt.location && (
-                        <span className="inline-flex items-center gap-1 shrink-0">
-                          <MapPin className="h-3 w-3 text-primary" />
-                          <span>{evt.location}</span>
-                        </span>
-                      )}
-                      <span className="shrink-0">·</span>
-                      <span className="shrink-0">
-                        {new Date(evt.startAt || evt.createdAt).toLocaleDateString("fr-FR", {
+                    <p className="text-[11px] text-base-content/60 flex items-center gap-2 mt-0.5">
+                      <span>{evt.images?.length ?? 0} photo{(evt.images?.length ?? 0) > 1 ? "s" : ""}</span>
+                      <span>·</span>
+                      <span>
+                        {new Date(evt.publishedAt || evt.createdAt).toLocaleDateString("fr-FR", {
                           day: "numeric",
                           month: "short",
                         })}

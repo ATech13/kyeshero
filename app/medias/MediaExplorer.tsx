@@ -7,6 +7,7 @@ import YouTubeVideoCard from "../components/YouTubeVideoCard";
 import EmptyState from "../components/EmptyState";
 import { Headphones, Video, Radio } from "lucide-react";
 import type { ChurchMedia, ChurchYouTubeVideo } from "@/types/type";
+import { matchesSearchQuery } from "@/lib/search";
 
 interface MediaExplorerProps {
   initialAudios: ChurchMedia[];
@@ -29,26 +30,17 @@ export default function MediaExplorer({
         (currentTab === "SONG" && audio.type === "SONG") ||
         (currentTab === "MEETING" && audio.type === "MEETING");
 
-      const q = searchQuery.toLowerCase().trim();
-      const matchSearch =
-        !q ||
-        audio.title.toLowerCase().includes(q) ||
-        (audio.speakerName && audio.speakerName.toLowerCase().includes(q)) ||
-        (audio.description && audio.description.toLowerCase().includes(q));
-
-      return matchType && matchSearch;
+      return (
+        matchType &&
+        matchesSearchQuery(searchQuery, audio.title, audio.speakerName, audio.description)
+      );
     });
   }, [initialAudios, currentTab, searchQuery]);
 
   const filteredVideos = useMemo(() => {
     if (currentTab !== "ALL" && currentTab !== "VIDEO") return [];
     return initialVideos.filter((video) => {
-      const q = searchQuery.toLowerCase().trim();
-      return (
-        !q ||
-        video.title.toLowerCase().includes(q) ||
-        (video.description && video.description.toLowerCase().includes(q))
-      );
+      return matchesSearchQuery(searchQuery, video.title, video.description);
     });
   }, [initialVideos, currentTab, searchQuery]);
 

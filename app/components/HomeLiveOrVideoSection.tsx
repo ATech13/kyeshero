@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import bg from "@/public/images/church.webp"
 import {
   Play,
   Radio,
@@ -54,7 +55,7 @@ export default function HomeLiveOrVideoSection({
     description: "Édification et communion fraternelle à l'Assemblée Chrétienne de Goma Keshero.",
     youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     youtubeVideoId: "dQw4w9WgXcQ",
-    thumbnailUrl: "/images/church.jpeg",
+    thumbnailUrl: bg,
     channelName: "Assemblée Chrétienne Goma",
     publishedAt: new Date(),
     status: "PUBLISHED",
@@ -168,29 +169,6 @@ export default function HomeLiveOrVideoSection({
 
             {/* Boutons d'action prioritaires */}
             <div className="space-y-3">
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(true)}
-                  className={`btn w-full rounded-2xl font-bold shadow-lg gap-2 ${
-                    isLive
-                      ? "btn-error text-white"
-                      : "btn-primary text-primary-content"
-                  }`}
-                >
-                  <Play className="h-4 w-4 fill-current" />
-                  <span>{isLive ? "Accéder au live maintenant" : "Regarder cette prédication"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(true)}
-                  className="btn btn-outline btn-sm w-full rounded-xl text-amber-300 border-amber-300/40 hover:bg-amber-300/10 hover:text-amber-200 gap-2 font-bold"
-                >
-                  <MessageSquareHeart className="h-4 w-4" />
-                  <span>Laisser un commentaire ou saluer</span>
-                </button>
-              </div>
 
               <a
                 href={parsed.originalUrl}

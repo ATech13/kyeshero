@@ -94,38 +94,7 @@ export default async function AboutPage() {
         </figcaption>
       </figure>
 
-      {/* Piliers fondamentaux */}
-      <div className="grid gap-6 sm:grid-cols-3">
-        <div className="rounded-2xl border border-base-300 bg-base-100 p-6 space-y-3 shadow-xs hover:border-primary/40 transition">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <BookOpen className="h-5 w-5" />
-          </div>
-          <h3 className="font-bold text-lg text-base-content">La Parole de Dieu</h3>
-          <p className="text-sm text-base-content/70 leading-relaxed">
-            Nous plaçons les Saintes Écritures au cœur absolu de notre enseignement, de notre doctrine et de notre marche quotidienne.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-base-300 bg-base-100 p-6 space-y-3 shadow-xs hover:border-primary/40 transition">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Heart className="h-5 w-5" />
-          </div>
-          <h3 className="font-bold text-lg text-base-content">L’Amour Fraternel</h3>
-          <p className="text-sm text-base-content/70 leading-relaxed">
-            Un accueil bienveillant pour chaque âme : membres, familles, nouveaux convertis et visiteurs trouvent leur place dans la fraternité.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-base-300 bg-base-100 p-6 space-y-3 shadow-xs hover:border-primary/40 transition">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Users className="h-5 w-5" />
-          </div>
-          <h3 className="font-bold text-lg text-base-content">La Prière &amp; Communion</h3>
-          <p className="text-sm text-base-content/70 leading-relaxed">
-            Des rendez-vous réguliers de prière et d’intercession pour la paix de notre pays, nos familles et l’édification du corps de Christ.
-          </p>
-        </div>
-      </div>
+      
 
       {/* Notre famille spirituelle */}
       <section className="space-y-8" aria-labelledby="famille-spirituelle">
@@ -133,7 +102,7 @@ export default async function AboutPage() {
           <div>
             <div className="flex items-center justify-center sm:justify-start gap-2 text-xs font-bold text-primary uppercase tracking-wider">
               <Users className="h-4 w-4" />
-              <span>Leadership &amp; Ministères</span>
+              <span>Ministères</span>
             </div>
             <h2 id="famille-spirituelle" className="text-2xl sm:text-3xl font-black text-base-content mt-1">
               Notre Famille Spirituelle
@@ -186,6 +155,39 @@ export default async function AboutPage() {
 
         <ProgramsSchedule />
       </section>
+
+      {/* Piliers fondamentaux */}
+      <div className="grid gap-6 sm:grid-cols-3">
+        <div className="rounded-2xl border border-base-300 bg-base-100 p-6 space-y-3 shadow-xs hover:border-primary/40 transition">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <h3 className="font-bold text-lg text-base-content">La Parole de Dieu</h3>
+          <p className="text-sm text-base-content/70 leading-relaxed">
+            Nous plaçons les Saintes Écritures au cœur absolu de notre enseignement, de notre doctrine et de notre marche quotidienne.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-base-300 bg-base-100 p-6 space-y-3 shadow-xs hover:border-primary/40 transition">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Heart className="h-5 w-5" />
+          </div>
+          <h3 className="font-bold text-lg text-base-content">L’Amour Fraternel</h3>
+          <p className="text-sm text-base-content/70 leading-relaxed">
+            Un accueil bienveillant pour chaque âme : membres, familles, nouveaux convertis et visiteurs trouvent leur place dans la fraternité.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-base-300 bg-base-100 p-6 space-y-3 shadow-xs hover:border-primary/40 transition">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Users className="h-5 w-5" />
+          </div>
+          <h3 className="font-bold text-lg text-base-content">La Prière &amp; Communion</h3>
+          <p className="text-sm text-base-content/70 leading-relaxed">
+            Des rendez-vous réguliers de prière pour la paix de notre pays, nos familles et l’édification du corps de Christ.
+          </p>
+        </div>
+      </div>
 
       {/* Section Citations & Paroles d'Édification */}
       <section className="space-y-8">

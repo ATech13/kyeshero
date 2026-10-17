@@ -1,11 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Radio,
-  Calendar,
+  Camera,
   Heart,
   ArrowRight,
-  Clock,
-  MapPin,
+  ThumbsUp,
+  Image as ImageIcon,
 } from "lucide-react";
 import type { UnifiedPublication } from "@/actions/events";
 
@@ -28,11 +29,11 @@ export default function HomeTransitionSection({
             Accédez facilement à notre communauté
           </h2>
           <p className="text-xs sm:text-sm text-base-content/70">
-            Trois espaces clairs pour écouter la Parole, participer aux rassemblements et découvrir notre foi.
+            Trois espaces clairs pour écouter la Parole, vivre les moments forts en photos et découvrir notre foi.
           </p>
         </div>
 
-        {/* 3 Portails clés correspondant aux 3 onglets */}
+        {/* 3 Portails clés */}
         <div className="grid gap-6 sm:grid-cols-3">
           {/* Portail 1 : Contenus */}
           <Link
@@ -56,24 +57,24 @@ export default function HomeTransitionSection({
             </div>
           </Link>
 
-          {/* Portail 2 : Événements & Actualités */}
+          {/* Portail 2 : Événements en Images */}
           <Link
             href="/evenements"
             className="group rounded-3xl border border-base-300 bg-base-100 p-6 flex flex-col justify-between transition hover:border-secondary/50 hover:shadow-md"
           >
             <div className="space-y-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary/10 text-secondary group-hover:scale-105 transition-transform">
-                <Calendar className="h-5 w-5" />
+                <Camera className="h-5 w-5" />
               </div>
               <h3 className="text-lg font-bold text-base-content group-hover:text-secondary transition">
-                Événements &amp; Actualités
+                Événements en Images
               </h3>
               <p className="text-xs sm:text-sm text-base-content/70 leading-relaxed">
-                Cultes dominicaux, séminaires bibliques, veillées et nouvelles de notre communauté réunies.
+                Photos des cultes, sainte cène, conventions et rassemblements fraternels de l'église.
               </p>
             </div>
             <div className="pt-5 mt-4 border-t border-base-200 flex items-center justify-between text-xs font-bold text-secondary">
-              <span>Consulter l'agenda</span>
+              <span>Voir les photos</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
@@ -101,55 +102,58 @@ export default function HomeTransitionSection({
           </Link>
         </div>
 
-        {/* Prochain rassemblement ou actualité mis en avant si disponible */}
+        {/* Dernière publication photo mise en avant si disponible */}
         {featuredPublication && (
           <div className="rounded-3xl border border-base-300 bg-base-100 p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-            <div className="space-y-1.5 min-w-0">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                    featuredPublication.type === "EVENT"
-                      ? "bg-secondary text-secondary-content"
-                      : "bg-primary text-primary-content"
-                  }`}
-                >
-                  {featuredPublication.type === "EVENT" ? "À Venir" : "Actualité"}
-                </span>
-                <span className="text-xs text-base-content/60">
-                  {new Date(featuredPublication.date).toLocaleDateString("fr-FR", {
-                    weekday: "short",
-                    day: "numeric",
-                    month: "long",
-                  })}
-                </span>
-              </div>
-              <h4 className="text-base sm:text-lg font-bold text-base-content truncate">
-                {featuredPublication.title}
-              </h4>
-              <div className="flex items-center gap-4 text-xs text-base-content/70">
-                {featuredPublication.location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3 text-primary shrink-0" />
-                    <span className="truncate">{featuredPublication.location}</span>
+            <div className="flex items-center gap-4 min-w-0">
+              {/* Vignette photo si disponible */}
+              {featuredPublication.coverImageUrl ? (
+                <div className="relative h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden shrink-0 border border-base-200 bg-neutral-900">
+                  <Image
+                    src={featuredPublication.coverImageUrl}
+                    alt={featuredPublication.title}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                </div>
+              ) : (
+                <div className="h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <ImageIcon className="h-8 w-8" />
+                </div>
+              )}
+
+              <div className="space-y-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-secondary text-secondary-content">
+                    <Camera className="h-3 w-3" />
+                    <span>En Images</span>
                   </span>
-                )}
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3 text-secondary shrink-0" />
-                  <span>
-                    {new Date(featuredPublication.date).toLocaleTimeString("fr-FR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
+                  <span className="text-xs text-base-content/60">
+                    {new Date(featuredPublication.date).toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
                     })}
                   </span>
-                </span>
+                </div>
+                <h4 className="text-base sm:text-lg font-bold text-base-content truncate">
+                  {featuredPublication.title}
+                </h4>
+                {featuredPublication.likesCount !== undefined && featuredPublication.likesCount > 0 && (
+                  <p className="text-xs text-base-content/70 flex items-center gap-1">
+                    <ThumbsUp className="h-3 w-3 text-blue-600 fill-blue-600" />
+                    <span>{featuredPublication.likesCount} mentions j'aime</span>
+                  </p>
+                )}
               </div>
             </div>
 
             <Link
               href={`/evenements/${featuredPublication.slug}`}
-              className="btn btn-primary btn-sm rounded-xl font-bold shrink-0 self-start sm:self-center"
+              className="btn btn-primary btn-sm rounded-xl font-bold shrink-0 self-start sm:self-center gap-1.5"
             >
-              <span>Consulter</span>
+              <span>Voir l'album</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

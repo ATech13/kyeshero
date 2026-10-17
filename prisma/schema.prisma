@@ -365,6 +365,8 @@ model Post {
   coverImageUrl       String?
   coverImageKitFileId String?
 
+  likesCount          Int           @default(0)
+
   // Date de l'événement ou des travaux (optionnelle)
   eventDate DateTime?
 

@@ -18,7 +18,8 @@ import {
   RotateCcw,
 } from "lucide-react";
 import type { ChurchMedia, ChurchYouTubeVideo } from "@/types/type";
-import { detectVideoPlatform, VideoPlatform } from "@/lib/video-platforms";
+import { detectVideoPlatform } from "@/lib/video-platforms";
+import { matchesSearchQuery } from "@/lib/search";
 
 // Icône Facebook
 function FacebookIcon({ className }: { className?: string }) {
@@ -93,16 +94,12 @@ export default function ContentsExplorer({
         return false;
       }
 
-      // Recherche
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const inTitle = audio.title.toLowerCase().includes(q);
-        const inSpeaker = audio.speakerName?.toLowerCase().includes(q);
-        const inDesc = audio.description?.toLowerCase().includes(q);
-        if (!inTitle && !inSpeaker && !inDesc) return false;
-      }
-
-      return true;
+      return matchesSearchQuery(
+        searchQuery,
+        audio.title,
+        audio.speakerName,
+        audio.description,
+      );
     });
   }, [initialAudios, activeTab, category, searchQuery]);
 
@@ -138,16 +135,12 @@ export default function ContentsExplorer({
         if (!isSermon) return false;
       }
 
-      // Recherche
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const inTitle = video.title.toLowerCase().includes(q);
-        const inDesc = video.description?.toLowerCase().includes(q);
-        const inChan = video.channelName?.toLowerCase().includes(q);
-        if (!inTitle && !inDesc && !inChan) return false;
-      }
-
-      return true;
+      return matchesSearchQuery(
+        searchQuery,
+        video.title,
+        video.description,
+        video.channelName,
+      );
     });
   }, [initialVideos, activeTab, videoPlatform, category, searchQuery]);
 

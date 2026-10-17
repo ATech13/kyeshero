@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Search, SlidersHorizontal, HardHat, Calendar, Users, Megaphone, Heart, HelpCircle, Layers } from "lucide-react";
 import PostCard from "@/app/components/PostCard";
-import { POST_CATEGORY_LABELS } from "@/lib/post-constants";
+import { matchesSearchQuery } from "@/lib/search";
 
 interface PostItem {
   id: string;
@@ -40,13 +40,7 @@ export default function PostsExplorer({ initialPosts }: PostsExplorerProps) {
       const matchCat =
         selectedCategory === "ALL" || post.category === selectedCategory;
 
-      const q = searchQuery.toLowerCase().trim();
-      const matchQuery =
-        !q ||
-        post.title.toLowerCase().includes(q) ||
-        post.description.toLowerCase().includes(q);
-
-      return matchCat && matchQuery;
+      return matchCat && matchesSearchQuery(searchQuery, post.title, post.description);
     });
   }, [initialPosts, selectedCategory, searchQuery]);
 
