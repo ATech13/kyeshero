@@ -24,7 +24,7 @@ const LANDSCAPE = { width: 1600, height: 1067 };
 export const PASTORS: GalleryItem[] = [
   {
     file: "pasteur-bulumba.webp",
-    title: "Pasteur Bulumba",
+    title: "Bulumba Chiba",
     subtitle: "Corps pastoral",
     description:
       "Pasteur à l'Assemblée Chrétienne de Goma.",
@@ -33,7 +33,7 @@ export const PASTORS: GalleryItem[] = [
   },
   {
     file: "pasteur-sabune.webp",
-    title: "Pasteur Sabune",
+    title: "Sabune Bamo-Gary",
     subtitle: "Corps pastoral",
     description:
       "Pasteur de l'Assemblée Chrétienne de Goma Kyeshero.",
@@ -42,7 +42,7 @@ export const PASTORS: GalleryItem[] = [
   },
   {
     file: "pasteur-sebazungu.webp",
-    title: "Pasteur Sebazungu",
+    title: "Sebazungu Phillipe",
     subtitle: "Corps pastoral",
     description:
       "Pasteur associé à l'Assemblée Chrétienne de Goma Kyeshero.",
@@ -51,7 +51,7 @@ export const PASTORS: GalleryItem[] = [
   },
   {
     file: "pasteur-kabanza.webp",
-    title: "Pasteur Kabanza",
+    title: "Kabanza Freddy",
     subtitle: "Corps pastoral",
     description:
       "Pasteur associé à l'Assemblée Chrétienne de Goma TMK.",
@@ -60,7 +60,7 @@ export const PASTORS: GalleryItem[] = [
   },
   {
     file: "pasteur-malimingi.webp",
-    title: "Pasteur Malimingi",
+    title: "Malimingi Josué",
     subtitle: "Corps pastoral",
     description:
       "Pasteur à l'Assemblée Chrétienne de Goma BUGAMBA.",
@@ -69,7 +69,7 @@ export const PASTORS: GalleryItem[] = [
   },
   {
     file: "pasteur-bake.webp",
-    title: "Pasteur Saiba",
+    title: "Kakule Saiba",
     subtitle: "Corps pastoral",
     description:
       "Pasteur à l'Assemblée Chrétienne de Goma Turunga.",
@@ -78,7 +78,7 @@ export const PASTORS: GalleryItem[] = [
   },
   {
     file: "pasteur-rusombo.webp",
-    title: "Pasteur Rusombo",
+    title: "Rusombo Edmond",
     subtitle: "Corps pastoral",
     description:
       "Pasteur associé à l'Assemblée Chrétienne de Goma Turunga.",
@@ -87,7 +87,7 @@ export const PASTORS: GalleryItem[] = [
   },
   {
     file: "pasteur-eugene.webp",
-    title: "Pasteur Eugène",
+    title: "Matabaro Eugène",
     subtitle: "Corps pastoral",
     description:
       "Pasteur à l'Assemblée Chrétienne de Goma BYAHI.",
@@ -126,21 +126,21 @@ export const RESERVED_PASTORS: ReservedPastor[] = [
 ];
 
 export const ADMINISTRATION: GalleryItem[] = [
-  { file: "admin-DIDIER.webp", title: "Didier", subtitle: "Administration", focus: "50% 22%", ...PORTRAIT },
-  { file: "admin-JOSEPH.webp", title: "Joseph", subtitle: "Administration", focus: "50% 22%", ...PORTRAIT },
-  { file: "admin-JEAN_CLAUDE.webp", title: "Jean-Claude", subtitle: "Administration", focus: "50% 22%", ...PORTRAIT },
+  { file: "admin-DIDIER.webp", title: "Didier MPIGA", subtitle: "Administration", focus: "50% 22%", ...PORTRAIT },
+  { file: "admin-JOSEPH.webp", title: "Joseph KAMATE", subtitle: "Administration", focus: "50% 22%", ...PORTRAIT },
+  { file: "admin-JEAN_CLAUDE.webp", title: "Jean-Claude BWENGE", subtitle: "Administration", focus: "50% 22%", ...PORTRAIT },
 ];
 
 export const DEACONS: GalleryItem[] = [
-  { file: "diacre-MARTIN.webp", title: "Martin", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
-  { file: "diacre-ALEXANDRE.webp", title: "Alexandre", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
-  { file: "diacre-BASEME.webp", title: "Baseme", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
-  { file: "diacre-TCHIKALA.webp", title: "Tchikala", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
-  { file: "diacre-EZECHIEL.webp", title: "Ézéchiel", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
-  { file: "diacre-IZRON.webp", title: "Izron", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
-  { file: "diacre-DANIEL.webp", title: "Daniel", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
-  { file: "diacre-ESAI.webp", title: "Esaï", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
-  { file: "diacre-BAHAVU.webp", title: "Bahavu", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
+  { file: "diacre-MARTIN.webp", title: "Martin CHIRWISA", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
+  { file: "diacre-ALEXANDRE.webp", title: "Alexandre BIGOHE", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
+  { file: "diacre-BASEME.webp", title: "Baseme RIBAKARE", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
+  { file: "diacre-TCHIKALA.webp", title: "Roger TCHIKALA", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
+  { file: "diacre-EZECHIEL.webp", title: "Ézéchiel MAHIRE", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
+  { file: "diacre-IZRON.webp", title: "Isron MATURO", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
+  { file: "diacre-DANIEL.webp", title: "Daniel SEMUSHI", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
+  { file: "diacre-ESAI.webp", title: "Esaie SERONDO", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
+  { file: "diacre-BAHAVU.webp", title: "Jérémie BAHABU", subtitle: "Diacre", focus: "50% 22%", ...PORTRAIT },
 ];
 
 export const TEAMS: GalleryItem[] = [
