@@ -80,19 +80,19 @@ export default function Navbar() {
             className="sticky top-0 z-40 w-full max-w-full border-b border-base-300/80 bg-base-100/95 backdrop-blur-md"
         >
             {/* Barre supérieure principale */}
-            <div className="mx-auto flex max-w-7xl items-center justify-between px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+            <div className="mx-auto flex md:grid md:grid-cols-[1fr_auto_1fr] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
                 {/* Logo de l'église -> Accueil (/) */}
                 <Link
                     href="/"
-                    className="nav-brand flex items-center gap-2.5 rounded-xl p-1 transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-primary"
+                    className="nav-brand md:justify-self-start flex items-center gap-2.5 rounded-xl p-1 transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-primary"
                     title="Accueil — Assemblée Chrétienne de Goma"
                     aria-label="Retour à l'accueil"
                 >
-                    <div className="flex h-9 w-9 items-center justify-center text-primary-content shadow-xs">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center text-primary-content">
                         <Image
                             src={logo}
                             alt="logo"
-                            className="object-cover" />
+                            className="h-full w-full object-contain" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-sm font-black tracking-tight leading-tight text-base-content">
@@ -106,7 +106,7 @@ export default function Navbar() {
 
                 {/* Navigation Desktop — Uniquement les 3 onglets principaux */}
                 <nav
-                    className="hidden md:flex items-center gap-1 rounded-2xl bg-base-200/60 p-1 border border-base-300/60"
+                    className="hidden md:flex md:justify-self-center items-center gap-1 rounded-2xl bg-base-200/60 p-1 border border-base-300/60"
                     aria-label="Navigation principale"
                 >
                     {mainTabs.map((item) => {
@@ -127,7 +127,7 @@ export default function Navbar() {
                 </nav>
 
                 {/* Actions à droite */}
-                <div className="nav-actions flex items-center gap-2 sm:gap-2.5">
+                <div className="nav-actions md:justify-self-end flex items-center gap-2 sm:gap-2.5">
                     <ToggleTheme />
 
                     {/* Menu secondaire mobile (contact, infos) */}

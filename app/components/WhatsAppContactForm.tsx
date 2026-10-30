@@ -77,7 +77,7 @@ export default function WhatsAppContactForm({
     }, 1500);
   };
 
-  const directChatUrl = `https://wa.me/${CHURCH_CONFIG.whatsappNumber || "243900163658"}?text=${encodeURIComponent(
+  const directChatUrl = `https://wa.me/${CHURCH_CONFIG.whatsappNumber || "243991267790"}?text=${encodeURIComponent(
     "Bonjour Assemblée Chrétienne de Goma, je vous écris depuis votre site internet."
   )}`;
 

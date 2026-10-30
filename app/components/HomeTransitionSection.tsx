@@ -25,10 +25,10 @@ export default function HomeTransitionSection({
           <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary uppercase tracking-wider">
             <span>Vie de l'Église &amp; Ressources</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-base-content tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black text-base-content tracking-tight text-balance">
             Accédez facilement à notre communauté
           </h2>
-          <p className="text-xs sm:text-sm text-base-content/70">
+          <p className="text-xs sm:text-sm text-base-content/70 text-pretty">
             Trois espaces clairs pour écouter la Parole, vivre les moments forts en photos et découvrir notre foi.
           </p>
         </div>

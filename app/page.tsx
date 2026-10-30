@@ -14,7 +14,7 @@ export default async function Home() {
   const featuredPublication = publications[0] || null;
 
   return (
-    <div className="w-full min-h-[240vh] flex flex-col justify-start animate-in fade-in duration-500 overflow-x-clip">
+    <div className="w-full min-h-screen flex flex-col justify-start animate-in fade-in duration-500 overflow-x-clip">
       {/* ============================================================ */}
       {/* ZONE 1 : PRÉSENTATION & ENSEIGNEMENT APOSTOLIQUE (0 -> 100vh)  */}
       {/* Carousel fluide, message principal, logo & fondements         */}

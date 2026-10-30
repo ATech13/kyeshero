@@ -65,7 +65,7 @@ export default function HomeLiveOrVideoSection({
   const parsed = parseVideo(primaryVideo.youtubeUrl || primaryVideo.youtubeVideoId, primaryVideo.thumbnailUrl);
 
   return (
-    <section className="relative min-h-[90vh] py-16 sm:py-24 bg-neutral-900 text-white flex flex-col justify-center border-t border-b border-white/10">
+    <section className="relative py-16 sm:py-20 lg:py-24 bg-neutral-900 text-white flex flex-col justify-center border-t border-b border-white/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full space-y-10">
         {/* En-tête de section avec logique de priorité */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/15 pb-5">
@@ -82,10 +82,10 @@ export default function HomeLiveOrVideoSection({
               </div>
             )}
 
-            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight text-balance">
               {isLive ? "Culte en Direct" : "Parole & Prédications Récentes"}
             </h2>
-            <p className="text-xs sm:text-sm text-white/70 max-w-xl">
+            <p className="text-xs sm:text-sm text-white/70 max-w-xl text-pretty">
               {isLive
                 ? "Rejoignez le culte en temps réel avec toute l'église pour l'adoration et l'écoute de la Parole."
                 : "Regardez notre dernier enregistrement officiel ou écoutez les prédications audio disponibles."}
@@ -156,28 +156,27 @@ export default function HomeLiveOrVideoSection({
                 {primaryVideo.channelName || "Assemblée Chrétienne Keshero"}
               </span>
 
-              <h3 className="text-xl sm:text-2xl font-black text-white leading-snug">
+              <h3 className="text-xl sm:text-2xl font-black text-white leading-snug text-balance">
                 {primaryVideo.title}
               </h3>
 
               {primaryVideo.description && (
-                <p className="text-xs sm:text-sm text-white/70 line-clamp-3 leading-relaxed">
+                <p className="text-xs sm:text-sm text-white/70 line-clamp-3 leading-relaxed text-pretty">
                   {primaryVideo.description}
                 </p>
               )}
             </div>
 
             {/* Boutons d'action prioritaires */}
-            <div className="space-y-3">
-
+            <div className="pt-1">
               <a
                 href={parsed.originalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-ghost btn-xs w-full text-white/60 hover:text-white gap-1.5 font-medium"
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs sm:text-sm font-semibold text-white/80 hover:text-white transition"
               >
                 <span>Ouvrir sur YouTube</span>
-                <ExternalLink className="h-3 w-3" />
+                <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </div>
           </div>

@@ -83,11 +83,11 @@ export default function Footer() {
           {/* Col 1 : Identité & Présentation */}
           <div className="footer-col space-y-3">
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center text-primary-content shadow-xs">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center text-primary-content">
                           <Image
                             src={logo}
                             alt="logo"
-                            className="object-cover" />
+                            className="h-full w-full object-contain" />
                         </div>
               <span className="font-black text-base tracking-tight">Assemblée Chrétienne</span>
             </Link>
