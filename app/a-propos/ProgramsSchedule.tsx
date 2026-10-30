@@ -11,23 +11,53 @@ const SHORT_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"] as const;
 
 const ACTIVITIES: Record<
   Activity,
-  { label: string; hours: string; badge: string; dot: string }
+  { label: string; weekdayHours: string; sundayHours?: string; badge: string; dot: string }
 > = {
   priere: {
     label: "Prière",
-    hours: "09h00 – 14h30",
+    weekdayHours: "09h00 – 14h00",
     badge: "bg-success/15 text-success border-success/30",
     dot: "bg-success",
   },
   culte: {
     label: "Culte",
-    hours: "15h00 – 17h00",
+    weekdayHours: "15h00 – 17h00",
+    sundayHours: "09h00 – 12h00",
     badge: "bg-primary/15 text-primary border-primary/30",
     dot: "bg-primary",
   },
 };
 
-// Activités listées dans l'ordre chronologique (prière le matin, culte l'après-midi)
+const SCHEDULE_LEGEND = [
+  {
+    key: "culte-dimanche",
+    label: "Culte (Dimanche)",
+    hours: ACTIVITIES.culte.sundayHours ?? "09h00 – 12h00",
+    dot: "bg-primary",
+  },
+  {
+    key: "culte-semaine",
+    label: "Culte (Semaine)",
+    hours: ACTIVITIES.culte.weekdayHours,
+    dot: "bg-primary",
+  },
+  {
+    key: "priere",
+    label: "Prière",
+    hours: ACTIVITIES.priere.weekdayHours,
+    dot: "bg-success",
+  },
+];
+
+function getActivityHours(activity: Activity, dayIndex?: number): string {
+  const a = ACTIVITIES[activity];
+  if (dayIndex === 6 && a.sundayHours) {
+    return a.sundayHours;
+  }
+  return a.weekdayHours;
+}
+
+// Activités listées dans l'ordre chronologique (prière le matin, culte l'après-midi en semaine, matin le dimanche)
 const SITES: { name: string; program: Partial<Record<number, Activity[]>> }[] = [
     { name: "KYESHERO", program: { 1: ["culte"], 2: ["culte"], 4: ["priere", "culte"], 6: ["culte"] } },
   { name: "TMK", program: { 1: ["culte"], 3: ["culte"], 4: ["priere", "culte"], 6: ["culte"] } },
@@ -37,14 +67,24 @@ const SITES: { name: string; program: Partial<Record<number, Activity[]>> }[] = 
   { name: "BYAHI", program: { 1: ["culte"], 2: ["priere", "culte"], 5: ["culte"], 6: ["culte"] } },
 ];
 
-function ActivityBadge({ activity, withHours = false }: { activity: Activity; withHours?: boolean }) {
+function ActivityBadge({
+  activity,
+  dayIndex,
+  withHours = false,
+}: {
+  activity: Activity;
+  dayIndex?: number;
+  withHours?: boolean;
+}) {
   const a = ACTIVITIES[activity];
+  const hours = getActivityHours(activity, dayIndex);
   return (
     <span
+      title={`${a.label} : ${hours}`}
       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap ${a.badge}`}
     >
       {a.label}
-      {withHours && <span className="font-mono font-semibold opacity-80">{a.hours}</span>}
+      {withHours && <span className="font-mono font-semibold opacity-80">{hours}</span>}
     </span>
   );
 }
@@ -65,23 +105,20 @@ export default function ProgramsSchedule() {
   return (
     <div className="space-y-6">
       {/* Légende des horaires */}
-      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-        {(Object.keys(ACTIVITIES) as Activity[]).map((key) => {
-          const a = ACTIVITIES[key];
-          return (
-            <div
-              key={key}
-              className="inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3.5 py-1.5 text-xs shadow-xs"
-            >
-              <span className={`h-2 w-2 rounded-full ${a.dot}`} />
-              <span className="font-bold text-base-content">{a.label}</span>
-              <span className="inline-flex items-center gap-1 font-mono text-base-content/70">
-                <Clock className="h-3 w-3" />
-                {a.hours}
-              </span>
-            </div>
-          );
-        })}
+      <div className="hidden md:flex flex-wrap items-center justify-center sm:justify-start gap-3">
+        {SCHEDULE_LEGEND.map((item) => (
+          <div
+            key={item.key}
+            className="inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3.5 py-1.5 text-xs shadow-xs"
+          >
+            <span className={`h-2 w-2 rounded-full ${item.dot}`} />
+            <span className="font-bold text-base-content">{item.label}</span>
+            <span className="inline-flex items-center gap-1 font-mono text-base-content/70">
+              <Clock className="h-3 w-3" />
+              {item.hours}
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* Vue tableau (tablette & desktop) */}
@@ -136,7 +173,7 @@ export default function ProgramsSchedule() {
                       {acts?.length ? (
                         <div className="flex flex-col items-center gap-1">
                           {acts.map((a) => (
-                            <ActivityBadge key={a} activity={a} />
+                            <ActivityBadge key={a} activity={a} dayIndex={d} />
                           ))}
                         </div>
                       ) : (
@@ -208,7 +245,7 @@ export default function ProgramsSchedule() {
                   </span>
                   <div className="flex flex-col items-end gap-1">
                     {site.program[selectedDay]!.map((a) => (
-                      <ActivityBadge key={a} activity={a} withHours />
+                      <ActivityBadge key={a} activity={a} dayIndex={selectedDay} withHours />
                     ))}
                   </div>
                 </li>

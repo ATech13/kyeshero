@@ -44,7 +44,7 @@ export default function ContactPage() {
             <div className="space-y-1">
               <h3 className="font-bold text-base">Téléphone &amp; WhatsApp</h3>
               <p className="text-sm font-semibold text-base-content mt-0.5">
-                +243 900 163 658
+                +243 991 267 790
               </p>
             </div>
           </div>

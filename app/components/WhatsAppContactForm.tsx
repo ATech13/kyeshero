@@ -46,7 +46,7 @@ export default function WhatsAppContactForm({
 
     setIsSending(true);
 
-    const whatsappNumber = CHURCH_CONFIG.whatsappNumber || "243900163658";
+    const whatsappNumber = CHURCH_CONFIG.whatsappNumber || "243991267790";
     
     const formattedText = [
       `*Assemblée Chrétienne de Goma (Kyeshero)*`,

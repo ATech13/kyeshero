@@ -59,6 +59,15 @@ export const PASTORS: GalleryItem[] = [
     ...PORTRAIT,
   },
   {
+    file: "pasteur-kaloba-omer.jpg",
+    title: "Kaloba Omer",
+    subtitle: "Corps pastoral",
+    description:
+      "Pasteur à l'Assemblée Chrétienne de Goma.",
+    focus: "50% 30%",
+    ...PORTRAIT,
+  },
+  {
     file: "pasteur-malimingi.webp",
     title: "Malimingi Josué",
     subtitle: "Corps pastoral",
@@ -93,7 +102,25 @@ export const PASTORS: GalleryItem[] = [
       "Pasteur à l'Assemblée Chrétienne de Goma BYAHI.",
     focus: "46% 35%",
     ...PORTRAIT,
-  },  
+  },
+  {
+    file: "pasteur-bake-norbert.jpg",
+    title: "Baké Norbert",
+    subtitle: "Corps pastoral",
+    description:
+      "Pasteur à l'Assemblée Chrétienne de Goma MUGUNGA.",
+    focus: "50% 30%",
+    ...PORTRAIT,
+  },
+  {
+    file: "pasteur-ngowno sylvain.jpg",
+    title: "Ngowno Sylvain",
+    subtitle: "Corps pastoral",
+    description:
+      "Pasteur associé à l'Assemblée Chrétienne de Goma MUGUNGA.",
+    focus: "50% 25%",
+    ...PORTRAIT,
+  },
 ];
 
 export type ReservedPastor = {
