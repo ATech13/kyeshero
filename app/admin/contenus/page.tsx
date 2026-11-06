@@ -3,6 +3,9 @@ import { getAllAdminMedia } from "@/actions/media";
 import AdminContentsManager from "./AdminContentsManager";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Gestion des Contenus (Vidéos & Audios) | Admin",
   description:

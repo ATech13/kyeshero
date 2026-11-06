@@ -202,6 +202,7 @@ export async function createYouTubeVideo(formData: FormData | Record<string, unk
 
   revalidatePath("/");
   revalidatePath("/contenus");
+  revalidatePath("/admin/contenus");
   revalidatePath("/medias");
   revalidatePath("/admin/videos");
 
@@ -235,6 +236,7 @@ export async function updateYouTubeVideo(id: string, data: Record<string, unknow
 
   revalidatePath("/");
   revalidatePath("/contenus");
+  revalidatePath("/admin/contenus");
   revalidatePath("/medias");
   revalidatePath("/admin/videos");
 
@@ -249,6 +251,8 @@ export async function deleteYouTubeVideo(id: string) {
   });
 
   revalidatePath("/");
+  revalidatePath("/contenus");
+  revalidatePath("/admin/contenus");
   revalidatePath("/medias");
   revalidatePath("/admin/videos");
 

@@ -107,7 +107,19 @@ export default function HomeLiveOrVideoSection({
           <div className="lg:col-span-8">
             <div className="relative aspect-video w-full overflow-hidden rounded-3xl border border-white/20 bg-black shadow-2xl">
               <div
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  if (typeof document !== "undefined") {
+                    document.querySelectorAll("audio").forEach((el) => {
+                      if (!el.paused) el.pause();
+                    });
+                  }
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(
+                      new CustomEvent("church:audio-play", { detail: { activeId: "home-video" } })
+                    );
+                  }
+                  setIsModalOpen(true);
+                }}
                 className="relative h-full w-full cursor-pointer group"
               >
                 <Image

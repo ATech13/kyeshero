@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Download, HardDrive } from "lucide-react";
+import { useState, useRef, useEffect, useId } from "react";
+import { Play, Pause, Volume2, VolumeX, Download, HardDrive, Music } from "lucide-react";
 import Image from "next/image";
+
+export const GLOBAL_AUDIO_PLAY_EVENT = "church:audio-play";
 
 interface AudioPlayerProps {
   src: string;
@@ -34,6 +36,7 @@ export default function AudioPlayer({
   duration: initialDuration,
   fileSize: initialFileSize,
 }: AudioPlayerProps) {
+  const playerId = useId();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -83,11 +86,35 @@ export default function AudioPlayer({
     };
   }, [src, initialFileSize, duration]);
 
+  // Synchronisation des événements audio natifs (play, pause, fin, progression)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
+    const onPlay = () => {
+      setIsPlaying(true);
+      // Mettre en pause tout autre audio HTML5 présent sur la page
+      if (typeof document !== "undefined") {
+        document.querySelectorAll("audio").forEach((el) => {
+          if (el !== audio && !el.paused) {
+            el.pause();
+          }
+        });
+      }
+      // Notifier les autres composants AudioPlayer pour synchroniser leur bouton Play/Pause
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent(GLOBAL_AUDIO_PLAY_EVENT, { detail: { activeId: playerId } })
+        );
+      }
+    };
+
+    const onPause = () => {
+      setIsPlaying(false);
+    };
+
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
+
     const onLoadedMetadata = () => {
       if (audio.duration && !isNaN(audio.duration)) {
         setDuration(audio.duration);
@@ -100,21 +127,51 @@ export default function AudioPlayer({
         });
       }
     };
+
     const onEnded = () => {
       setIsPlaying(false);
       setCurrentTime(0);
     };
 
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
     audio.addEventListener("ended", onEnded);
 
     return () => {
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audio.removeEventListener("ended", onEnded);
+
+      // Couper le son si le composant est retiré de la page
+      if (!audio.paused) {
+        audio.pause();
+      }
     };
-  }, []);
+  }, [playerId]);
+
+  // Écouter si un autre lecteur AudioPlayer ou vidéo démarre pour se mettre immédiatement en pause
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleOtherAudioPlay = (e: Event) => {
+      const customEvent = e as CustomEvent<{ activeId: string }>;
+      if (customEvent.detail?.activeId !== playerId) {
+        if (audioRef.current && !audioRef.current.paused) {
+          audioRef.current.pause();
+        }
+        setIsPlaying(false);
+      }
+    };
+
+    window.addEventListener(GLOBAL_AUDIO_PLAY_EVENT, handleOtherAudioPlay);
+    return () => {
+      window.removeEventListener(GLOBAL_AUDIO_PLAY_EVENT, handleOtherAudioPlay);
+    };
+  }, [playerId]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -124,6 +181,20 @@ export default function AudioPlayer({
       audio.pause();
       setIsPlaying(false);
     } else {
+      // Mettre en pause tout autre audio avant de démarrer
+      if (typeof document !== "undefined") {
+        document.querySelectorAll("audio").forEach((el) => {
+          if (el !== audio && !el.paused) {
+            el.pause();
+          }
+        });
+      }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent(GLOBAL_AUDIO_PLAY_EVENT, { detail: { activeId: playerId } })
+        );
+      }
+
       audio.play().then(() => setIsPlaying(true)).catch((err) => {
         console.warn("Échec de lecture audio:", err);
       });
@@ -162,7 +233,7 @@ export default function AudioPlayer({
           </div>
         ) : (
           <div className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Play className="h-5 w-5 sm:h-6 sm:w-6 ml-0.5" />
+            <Music className="h-5 w-5 sm:h-6 sm:w-6 ml-0.5" />
           </div>
         )}
 

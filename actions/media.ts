@@ -106,6 +106,8 @@ export async function createMedia(formData: FormData | Record<string, unknown>) 
   });
 
   revalidatePath("/");
+  revalidatePath("/contenus");
+  revalidatePath("/admin/contenus");
   revalidatePath("/medias");
   revalidatePath("/admin/audios");
 
@@ -127,6 +129,8 @@ export async function updateMedia(id: string, data: Record<string, unknown>) {
   });
 
   revalidatePath("/");
+  revalidatePath("/contenus");
+  revalidatePath("/admin/contenus");
   revalidatePath("/medias");
   revalidatePath("/admin/audios");
 
@@ -161,6 +165,8 @@ export async function deleteMedia(id: string) {
   });
 
   revalidatePath("/");
+  revalidatePath("/contenus");
+  revalidatePath("/admin/contenus");
   revalidatePath("/medias");
   revalidatePath("/admin/audios");
 

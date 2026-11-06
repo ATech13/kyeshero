@@ -5,6 +5,9 @@ import { Headphones, Youtube, Radio } from "lucide-react";
 import { CHURCH_CONFIG } from "@/lib/church-info";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Contenus · Prédications, Chansons & Vidéos",
   description:

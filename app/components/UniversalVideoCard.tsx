@@ -51,6 +51,20 @@ export default function UniversalVideoCard({
   const [isOpen, setIsOpen] = useState(false);
   const parsed = parseVideo(videoUrl, thumbnailUrl);
 
+  const handleOpenModal = () => {
+    if (typeof document !== "undefined") {
+      document.querySelectorAll("audio").forEach((el) => {
+        if (!el.paused) el.pause();
+      });
+    }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("church:audio-play", { detail: { activeId: `video-${id}` } })
+      );
+    }
+    setIsOpen(true);
+  };
+
   const getPlatformBadge = () => {
     switch (parsed.platform) {
       case "FACEBOOK":
@@ -83,7 +97,7 @@ export default function UniversalVideoCard({
       <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-base-100 border border-base-300 shadow-xs transition hover:shadow-md hover:border-primary/40 w-full max-w-full">
         {/* Miniature avec superposition */}
         <div
-          onClick={() => setIsOpen(true)}
+          onClick={handleOpenModal}
           className="relative aspect-video w-full cursor-pointer overflow-hidden bg-base-200"
         >
           <Image
@@ -126,7 +140,7 @@ export default function UniversalVideoCard({
           </p>
 
           <h3
-            onClick={() => setIsOpen(true)}
+            onClick={handleOpenModal}
             className="cursor-pointer text-sm sm:text-base font-bold line-clamp-2 text-base-content hover:text-primary transition leading-snug"
             title={title}
           >
@@ -153,7 +167,7 @@ export default function UniversalVideoCard({
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
-                onClick={() => setIsOpen(true)}
+                onClick={handleOpenModal}
                 className="inline-flex items-center gap-1 text-xs font-bold text-secondary hover:underline cursor-pointer"
                 title="Envoyer une salutation ou un commentaire sur cette prédication"
               >
@@ -163,7 +177,7 @@ export default function UniversalVideoCard({
 
               <button
                 type="button"
-                onClick={() => setIsOpen(true)}
+                onClick={handleOpenModal}
                 className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline cursor-pointer"
               >
                 <Play className="h-3 w-3 fill-current" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Video,
@@ -71,6 +71,21 @@ export default function AdminContentsManager({
 
   // Lecteur audio actif pour prévisualisation
   const [activeAudioSrc, setActiveAudioSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleOtherPlay = (e: Event) => {
+      const customEvent = e as CustomEvent<{ activeId: string }>;
+      if (activeAudioSrc && customEvent.detail?.activeId) {
+        const currentPlayingItem = initialAudios.find((a) => a.audioUrl === activeAudioSrc);
+        if (currentPlayingItem && customEvent.detail.activeId !== currentPlayingItem.id) {
+          setActiveAudioSrc(null);
+        }
+      }
+    };
+    window.addEventListener("church:audio-play", handleOtherPlay);
+    return () => window.removeEventListener("church:audio-play", handleOtherPlay);
+  }, [activeAudioSrc, initialAudios]);
 
   // Suppression vidéo
   const handleDeleteVideo = async (id: string, title: string) => {
@@ -534,9 +549,22 @@ export default function AdminContentsManager({
                     <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
                       <button
                         type="button"
-                        onClick={() =>
-                          setActiveAudioSrc(activeAudioSrc === item.audioUrl ? null : item.audioUrl)
-                        }
+                        onClick={() => {
+                          const nextSrc = activeAudioSrc === item.audioUrl ? null : item.audioUrl;
+                          if (nextSrc) {
+                            if (typeof document !== "undefined") {
+                              document.querySelectorAll("audio").forEach((el) => {
+                                if (!el.paused) el.pause();
+                              });
+                            }
+                            if (typeof window !== "undefined") {
+                              window.dispatchEvent(
+                                new CustomEvent("church:audio-play", { detail: { activeId: item.id } })
+                              );
+                            }
+                          }
+                          setActiveAudioSrc(nextSrc);
+                        }}
                         className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary hover:scale-105 transition mt-0.5 sm:mt-0"
                         title="Écouter un extrait"
                       >
@@ -593,6 +621,20 @@ export default function AdminContentsManager({
                               autoPlay
                               src={item.audioUrl}
                               className="h-8 w-full max-w-md"
+                              onPlay={(e) => {
+                                if (typeof document !== "undefined") {
+                                  document.querySelectorAll("audio").forEach((other) => {
+                                    if (other !== e.currentTarget && !other.paused) {
+                                      other.pause();
+                                    }
+                                  });
+                                }
+                                if (typeof window !== "undefined") {
+                                  window.dispatchEvent(
+                                    new CustomEvent("church:audio-play", { detail: { activeId: item.id } })
+                                  );
+                                }
+                              }}
                             />
                           </div>
                         )}
