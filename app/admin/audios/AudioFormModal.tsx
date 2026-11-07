@@ -5,6 +5,7 @@ import { X, Upload, Loader2, Music, Mic, Link as LinkIcon, CheckCircle2 } from "
 import { toast } from "sonner";
 import { createMedia, updateMedia } from "@/actions/media";
 import { uploadToImageKit } from "@/lib/upload-imagekit";
+import { useEdgeStore } from "@/lib/edgestore";
 import { useRouter } from "next/navigation";
 
 interface AudioFormModalProps {
@@ -33,6 +34,7 @@ export default function AudioFormModal({
   mediaToEdit,
 }: AudioFormModalProps) {
   const router = useRouter();
+  const { edgestore } = useEdgeStore();
   const isEditing = Boolean(mediaToEdit);
 
   const [title, setTitle] = useState(mediaToEdit?.title || "");
@@ -100,14 +102,15 @@ export default function AudioFormModal({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Limite stricte de 28 Mo (ImageKit Free / Standard payload limit)
-    const MAX_SIZE = 28 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
-      const sizeMo = (file.size / (1024 * 1024)).toFixed(1);
+    const sizeMo = file.size / (1024 * 1024);
+    const sizeMoFormatted = sizeMo.toFixed(1);
+
+    // Limite globale de 150 Mo
+    const MAX_ALLOWED_SIZE = 150 * 1024 * 1024;
+    if (file.size > MAX_ALLOWED_SIZE) {
       toast.error(
-        `Ce fichier pèse ${sizeMo} Mo. ImageKit n'accepte pas les fichiers de plus de 28 Mo. Veuillez compresser votre fichier en MP3 (64-96 kbps) ou utiliser l'option « Lien direct (URL) » ci-dessus.`
+        `Ce fichier pèse ${sizeMoFormatted} Mo. La limite maximale est de 150 Mo. Veuillez compresser votre fichier en MP3 ou utiliser l'option « Lien direct (URL) » ci-dessus.`
       );
-      // Réinitialiser le champ input
       e.target.value = "";
       return;
     }
@@ -115,18 +118,55 @@ export default function AudioFormModal({
     try {
       setIsUploadingAudio(true);
       setUploadProgress(0);
-      setAudioFileName(`${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} Mo)`);
-      
-      const res = await uploadToImageKit(file, "audios", (progress) => {
-        setUploadProgress(progress.percent);
-        const loadedMo = (progress.loaded / (1024 * 1024)).toFixed(1);
-        const totalMo = (progress.total / (1024 * 1024)).toFixed(1);
-        setUploadProgressText(`${progress.percent}% (${loadedMo} / ${totalMo} Mo)`);
-      });
+      setAudioFileName(`${file.name} (${sizeMoFormatted} Mo)`);
 
-      setAudioUrl(res.url);
-      setImageKitFileId(res.fileId);
-      toast.success("Fichier audio téléversé avec succès !");
+      // 1. Si le fichier dépasse 28 Mo -> EdgeStore prend le relais pour les fichiers volumineux !
+      if (file.size > 28 * 1024 * 1024) {
+        toast.info(`Fichier volumineux (${sizeMoFormatted} Mo) : téléversement via EdgeStore en cours...`);
+
+        try {
+          const res = await edgestore.publicFiles.upload({
+            file,
+            onProgressChange: (progress) => {
+              setUploadProgress(progress);
+              const loadedMo = ((progress / 100) * sizeMo).toFixed(1);
+              setUploadProgressText(`${progress}% (${loadedMo} / ${sizeMoFormatted} Mo) [EdgeStore]`);
+            },
+          });
+
+          setAudioUrl(res.url);
+          setImageKitFileId("");
+          toast.success("Fichier audio volumineux téléversé avec succès via EdgeStore !");
+        } catch (edgeErr: any) {
+          console.error("Erreur EdgeStore:", edgeErr);
+          const msg = edgeErr?.message || "";
+          if (
+            msg.includes("EDGE_STORE") ||
+            msg.includes("access key") ||
+            msg.includes("secret key") ||
+            msg.includes("credentials") ||
+            msg.includes("500")
+          ) {
+            toast.error(
+              "Configuration EdgeStore manquante : veuillez ajouter EDGE_STORE_ACCESS_KEY et EDGE_STORE_SECRET_KEY dans .env (obtenues sur dashboard.edgestore.dev), ou utilisez l'onglet Lien direct."
+            );
+          } else {
+            toast.error(msg || "Erreur lors du téléversement avec EdgeStore");
+          }
+        }
+      } else {
+        // 2. Fichier standard (<= 28 Mo) -> Téléversement standard via ImageKit
+        const res = await uploadToImageKit(file, "audios", (progress) => {
+          setUploadProgress(progress.percent);
+          const loadedMo = (progress.loaded / (1024 * 1024)).toFixed(1);
+          const totalMo = (progress.total / (1024 * 1024)).toFixed(1);
+          setUploadProgressText(`${progress.percent}% (${loadedMo} / ${totalMo} Mo) [ImageKit]`);
+        });
+
+        setAudioUrl(res.url);
+        setImageKitFileId(res.fileId);
+        toast.success("Fichier audio téléversé avec succès via ImageKit !");
+      }
     } catch (err: any) {
       toast.error(err.message || "Erreur lors du téléversement audio");
     } finally {
@@ -298,7 +338,7 @@ export default function AudioFormModal({
                 }`}
               >
                 <Mic className="h-3.5 w-3.5" />
-                <span>Téléverser MP3 (&le; 28 Mo)</span>
+                <span>Téléverser MP3 (ImageKit &amp; EdgeStore)</span>
               </button>
 
               <button
@@ -311,11 +351,11 @@ export default function AudioFormModal({
                 }`}
               >
                 <LinkIcon className="h-3.5 w-3.5" />
-                <span>Lien direct (&gt; 28 Mo)</span>
+                <span>Lien direct / Google Drive</span>
               </button>
             </div>
 
-            {/* Mode 1 : Téléversement direct ImageKit */}
+            {/* Mode 1 : Téléversement direct ImageKit / EdgeStore */}
             {audioSourceType === "FILE" && (
               <div className="space-y-2 pt-1">
                 <div className="flex items-center gap-3">
@@ -328,7 +368,7 @@ export default function AudioFormModal({
                     <span>
                       {isUploadingAudio
                         ? "Téléversement..."
-                        : audioUrl && imageKitFileId
+                        : audioUrl
                         ? "Remplacer le fichier"
                         : "Choisir un fichier audio"}
                     </span>
@@ -365,7 +405,7 @@ export default function AudioFormModal({
                 )}
 
                 <p className="text-[11px] text-base-content/60 leading-normal">
-                  ⚡ <strong>Limite ImageKit :</strong> 28 Mo maximum par fichier. Pour les enregistrements plus lourds, compressez-les en MP3 ou utilisez l'onglet <strong>« Lien direct »</strong>.
+                  ⚡ <strong>Double moteur de téléversement :</strong> ImageKit gère les fichiers &le; 28 Mo, et <strong>EdgeStore</strong> prend automatiquement le relais pour les fichiers volumineux de plus de 28 Mo (jusqu'à <strong>150 Mo</strong>) !
                 </p>
               </div>
             )}

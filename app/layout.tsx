@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { Toaster } from "sonner";
 import { ClerkProvider } from "@clerk/nextjs";
+import { EdgeStoreProvider } from "@/lib/edgestore";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -54,15 +55,17 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="fr" data-theme="eglise" className={montserrat.variable}>
         <body className={`${montserrat.className} min-h-screen flex flex-col antialiased`}>
-          <Navbar />
-          <Toaster
-            position="top-right"
-            richColors
-            duration={3500}
-            visibleToasts={3}
-          />
-          <main className="flex-1 w-full max-w-full overflow-x-clip">{children}</main>
-          <Footer />
+          <EdgeStoreProvider>
+            <Navbar />
+            <Toaster
+              position="top-right"
+              richColors
+              duration={3500}
+              visibleToasts={3}
+            />
+            <main className="flex-1 w-full max-w-full overflow-x-clip">{children}</main>
+            <Footer />
+          </EdgeStoreProvider>
         </body>
       </html>
     </ClerkProvider>
