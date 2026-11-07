@@ -13,6 +13,20 @@ interface AudioFormModalProps {
   mediaToEdit?: any | null;
 }
 
+function normalizeAudioUrl(url: string): string {
+  const trimmed = url.trim();
+  // Support automatique des liens de partage Google Drive :
+  // https://drive.google.com/file/d/FILE_ID/view... ou https://drive.google.com/open?id=FILE_ID
+  const driveMatch =
+    trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+    trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+
+  if (driveMatch && driveMatch[1] && (trimmed.includes("drive.google.com") || trimmed.includes("docs.google.com"))) {
+    return `https://drive.google.com/uc?export=download&id=${driveMatch[1]}`;
+  }
+  return trimmed;
+}
+
 export default function AudioFormModal({
   isOpen,
   onClose,
@@ -153,12 +167,18 @@ export default function AudioFormModal({
 
     try {
       setIsSaving(true);
+      const cleanAudioUrl = normalizeAudioUrl(audioUrl);
+      if (!cleanAudioUrl) {
+        toast.error("Veuillez renseigner un lien audio valide");
+        return;
+      }
+
       const payload = {
         title: title.trim(),
         speakerName: speakerName.trim() || null,
         type,
         description: description.trim() || null,
-        audioUrl: audioUrl.trim(),
+        audioUrl: cleanAudioUrl,
         imageKitFileId: imageKitFileId || null,
         coverImageUrl: coverImageUrl || null,
         coverImageKitFileId: coverImageKitFileId || null,
@@ -350,23 +370,35 @@ export default function AudioFormModal({
               </div>
             )}
 
-            {/* Mode 2 : Lien externe direct */}
+            {/* Mode 2 : Lien externe direct / Google Drive */}
             {audioSourceType === "URL" && (
               <div className="space-y-2 pt-1">
                 <input
                   type="url"
                   value={audioUrl}
                   onChange={(e) => {
-                    setAudioUrl(e.target.value);
+                    const normalized = normalizeAudioUrl(e.target.value);
+                    setAudioUrl(normalized);
                     setImageKitFileId("");
                     setAudioFileName("");
                   }}
-                  placeholder="https://.../predication.mp3 (Lien direct vers l'audio)"
+                  placeholder="Collez ici le lien de partage Google Drive (ou lien direct MP3)"
                   className="input input-bordered input-sm w-full rounded-xl text-xs font-mono"
                 />
-                <p className="text-[11px] text-base-content/60 leading-relaxed">
-                  💡 <strong>Idéal pour les audios de plus de 28 Mo :</strong> hébergez votre fichier sur Google Drive (lien direct), Archive.org, Cloudinary ou votre propre serveur et collez le lien ici.
-                </p>
+                <div className="rounded-xl bg-base-100 p-3 border border-base-300 text-[11px] text-base-content/75 space-y-1.5">
+                  <p className="font-bold text-primary flex items-center gap-1.5">
+                    <span>📁 Comment faire avec Google Drive :</span>
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-base-content/75">
+                    <li>Glissez votre audio MP3 sur votre <strong>Google Drive</strong>.</li>
+                    <li>Faites un clic droit sur l'audio &gt; <strong>Partager</strong>.</li>
+                    <li>Sous « Accès général », choisissez <strong>« Tous les utilisateurs disposant du lien »</strong>.</li>
+                    <li>Cliquez sur <strong>Copier le lien</strong> et collez-le directement dans le champ ci-dessus.</li>
+                  </ol>
+                  <p className="text-[10px] text-success font-semibold pt-0.5">
+                    ✓ Le système transforme automatiquement votre lien de partage en flux direct pour que les fidèles puissent l'écouter instantanément sur le site !
+                  </p>
+                </div>
               </div>
             )}
 
