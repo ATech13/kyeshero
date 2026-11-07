@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X, Upload, Loader2, Music, Mic, Link as LinkIcon, CheckCircle2 } from "lucide-react";
+import { X, Upload, Loader2, Music, Mic, CheckCircle2, HardDrive } from "lucide-react";
 import { toast } from "sonner";
 import { createMedia, updateMedia } from "@/actions/media";
 import { uploadToImageKit } from "@/lib/upload-imagekit";
@@ -54,7 +54,7 @@ export default function AudioFormModal({
     mediaToEdit?.coverImageKitFileId || ""
   );
 
-  const [audioSourceType, setAudioSourceType] = useState<"FILE" | "URL">("FILE");
+  const [uploadTarget, setUploadTarget] = useState<"IMAGEKIT" | "EDGESTORE">("IMAGEKIT");
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadProgressText, setUploadProgressText] = useState("");
@@ -74,7 +74,7 @@ export default function AudioFormModal({
     setAudioFileName("");
     setUploadProgress(null);
     setUploadProgressText("");
-    setAudioSourceType("FILE");
+    setUploadTarget("IMAGEKIT");
   }, []);
 
   useEffect(() => {
@@ -89,7 +89,16 @@ export default function AudioFormModal({
         setCoverImageUrl(mediaToEdit.coverImageUrl || "");
         setCoverImageKitFileId(mediaToEdit.coverImageKitFileId || "");
         setAudioFileName("");
-        setAudioSourceType(mediaToEdit.imageKitFileId ? "FILE" : "URL");
+        if (mediaToEdit.imageKitFileId) {
+          setUploadTarget("IMAGEKIT");
+        } else if (
+          mediaToEdit.audioUrl?.includes("esfiles.dev") ||
+          mediaToEdit.audioUrl?.includes("edgestore")
+        ) {
+          setUploadTarget("EDGESTORE");
+        } else {
+          setUploadTarget("IMAGEKIT");
+        }
       } else {
         resetForm();
       }
@@ -98,18 +107,17 @@ export default function AudioFormModal({
 
   if (!isOpen) return null;
 
-  const handleAudioFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageKitAudio = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const sizeMo = file.size / (1024 * 1024);
     const sizeMoFormatted = sizeMo.toFixed(1);
 
-    // Limite globale de 150 Mo
-    const MAX_ALLOWED_SIZE = 150 * 1024 * 1024;
-    if (file.size > MAX_ALLOWED_SIZE) {
+    // ImageKit est limité à 28 Mo
+    if (file.size > 28 * 1024 * 1024) {
       toast.error(
-        `Ce fichier pèse ${sizeMoFormatted} Mo. La limite maximale est de 150 Mo. Veuillez compresser votre fichier en MP3 ou utiliser l'option « Lien direct (URL) » ci-dessus.`
+        `Ce fichier pèse ${sizeMoFormatted} Mo (dépasse la limite de 28 Mo d'ImageKit). Veuillez cliquer sur l'onglet « Téléverser sur EdgeStore » pour les fichiers volumineux (jusqu'à 150 Mo).`
       );
       e.target.value = "";
       return;
@@ -120,55 +128,73 @@ export default function AudioFormModal({
       setUploadProgress(0);
       setAudioFileName(`${file.name} (${sizeMoFormatted} Mo)`);
 
-      // 1. Si le fichier dépasse 28 Mo -> EdgeStore prend le relais pour les fichiers volumineux !
-      if (file.size > 28 * 1024 * 1024) {
-        toast.info(`Fichier volumineux (${sizeMoFormatted} Mo) : téléversement via EdgeStore en cours...`);
+      const res = await uploadToImageKit(file, "audios", (progress) => {
+        setUploadProgress(progress.percent);
+        const loadedMo = (progress.loaded / (1024 * 1024)).toFixed(1);
+        const totalMo = (progress.total / (1024 * 1024)).toFixed(1);
+        setUploadProgressText(`${progress.percent}% (${loadedMo} / ${totalMo} Mo) [ImageKit]`);
+      });
 
-        try {
-          const res = await edgestore.publicFiles.upload({
-            file,
-            onProgressChange: (progress) => {
-              setUploadProgress(progress);
-              const loadedMo = ((progress / 100) * sizeMo).toFixed(1);
-              setUploadProgressText(`${progress}% (${loadedMo} / ${sizeMoFormatted} Mo) [EdgeStore]`);
-            },
-          });
-
-          setAudioUrl(res.url);
-          setImageKitFileId("");
-          toast.success("Fichier audio volumineux téléversé avec succès via EdgeStore !");
-        } catch (edgeErr: any) {
-          console.error("Erreur EdgeStore:", edgeErr);
-          const msg = edgeErr?.message || "";
-          if (
-            msg.includes("EDGE_STORE") ||
-            msg.includes("access key") ||
-            msg.includes("secret key") ||
-            msg.includes("credentials") ||
-            msg.includes("500")
-          ) {
-            toast.error(
-              "Configuration EdgeStore manquante : veuillez ajouter EDGE_STORE_ACCESS_KEY et EDGE_STORE_SECRET_KEY dans .env (obtenues sur dashboard.edgestore.dev), ou utilisez l'onglet Lien direct."
-            );
-          } else {
-            toast.error(msg || "Erreur lors du téléversement avec EdgeStore");
-          }
-        }
-      } else {
-        // 2. Fichier standard (<= 28 Mo) -> Téléversement standard via ImageKit
-        const res = await uploadToImageKit(file, "audios", (progress) => {
-          setUploadProgress(progress.percent);
-          const loadedMo = (progress.loaded / (1024 * 1024)).toFixed(1);
-          const totalMo = (progress.total / (1024 * 1024)).toFixed(1);
-          setUploadProgressText(`${progress.percent}% (${loadedMo} / ${totalMo} Mo) [ImageKit]`);
-        });
-
-        setAudioUrl(res.url);
-        setImageKitFileId(res.fileId);
-        toast.success("Fichier audio téléversé avec succès via ImageKit !");
-      }
+      setAudioUrl(res.url);
+      setImageKitFileId(res.fileId);
+      toast.success("Fichier audio téléversé avec succès sur ImageKit !");
     } catch (err: any) {
-      toast.error(err.message || "Erreur lors du téléversement audio");
+      toast.error(err.message || "Erreur lors du téléversement sur ImageKit");
+    } finally {
+      setIsUploadingAudio(false);
+      setUploadProgress(null);
+    }
+  };
+
+  const handleEdgeStoreAudio = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const sizeMo = file.size / (1024 * 1024);
+    const sizeMoFormatted = sizeMo.toFixed(1);
+
+    // EdgeStore limite maximale 150 Mo
+    if (file.size > 150 * 1024 * 1024) {
+      toast.error(
+        `Ce fichier pèse ${sizeMoFormatted} Mo. La limite maximale autorisée sur EdgeStore est de 150 Mo.`
+      );
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      setIsUploadingAudio(true);
+      setUploadProgress(0);
+      setAudioFileName(`${file.name} (${sizeMoFormatted} Mo)`);
+
+      const res = await edgestore.publicFiles.upload({
+        file,
+        onProgressChange: (progress) => {
+          setUploadProgress(progress);
+          const loadedMo = ((progress / 100) * sizeMo).toFixed(1);
+          setUploadProgressText(`${progress}% (${loadedMo} / ${sizeMoFormatted} Mo) [EdgeStore]`);
+        },
+      });
+
+      setAudioUrl(res.url);
+      setImageKitFileId("");
+      toast.success("Fichier audio volumineux téléversé avec succès sur EdgeStore !");
+    } catch (edgeErr: any) {
+      console.error("Erreur EdgeStore:", edgeErr);
+      const msg = edgeErr?.message || "";
+      if (
+        msg.includes("EDGE_STORE") ||
+        msg.includes("access key") ||
+        msg.includes("secret key") ||
+        msg.includes("credentials") ||
+        msg.includes("500")
+      ) {
+        toast.error(
+          "Configuration EdgeStore manquante ou invalide : vérifiez EDGE_STORE_ACCESS_KEY et EDGE_STORE_SECRET_KEY dans .env."
+        );
+      } else {
+        toast.error(msg || "Erreur lors du téléversement avec EdgeStore");
+      }
     } finally {
       setIsUploadingAudio(false);
       setUploadProgress(null);
@@ -201,7 +227,7 @@ export default function AudioFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !audioUrl) {
-      toast.error("Veuillez renseigner le titre et charger un fichier audio ou coller un lien");
+      toast.error("Veuillez renseigner le titre et téléverser un fichier audio");
       return;
     }
 
@@ -209,7 +235,7 @@ export default function AudioFormModal({
       setIsSaving(true);
       const cleanAudioUrl = normalizeAudioUrl(audioUrl);
       if (!cleanAudioUrl) {
-        toast.error("Veuillez renseigner un lien audio valide");
+        toast.error("Veuillez téléverser un fichier audio valide");
         return;
       }
 
@@ -310,53 +336,55 @@ export default function AudioFormModal({
             </div>
           </div>
 
-          {/* Section Source Audio : Téléversement ImageKit OU Lien direct */}
+          {/* Section Source Audio : 2 Onglets Téléverser ImageKit & Téléverser EdgeStore */}
           <div className="rounded-xl border border-dashed border-base-300 bg-base-200/40 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold text-base-content/85">
-                Fichier ou Lien Audio *
+                Fichier Audio *
               </label>
               {audioUrl ? (
-                <span className="inline-flex items-center gap-1 text-xs text-success font-bold">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span>Audio prêt</span>
+                <span className="inline-flex items-center gap-1.5 text-xs text-success font-bold">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>
+                    Prêt ({imageKitFileId ? "ImageKit" : audioUrl.includes("esfiles.dev") || audioUrl.includes("edgestore") ? "EdgeStore" : "Audio chargé"})
+                  </span>
                 </span>
               ) : (
                 <span className="badge badge-xs badge-ghost font-medium">Requis</span>
               )}
             </div>
 
-            {/* Onglets de sélection du mode */}
+            {/* 2 Onglets : ImageKit & EdgeStore */}
             <div className="flex items-center gap-1.5 p-1 rounded-xl bg-base-200 border border-base-300">
               <button
                 type="button"
-                onClick={() => setAudioSourceType("FILE")}
-                className={`flex-1 py-1 px-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                  audioSourceType === "FILE"
-                    ? "bg-base-100 text-primary shadow-xs"
+                onClick={() => setUploadTarget("IMAGEKIT")}
+                className={`flex-1 py-1.5 px-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  uploadTarget === "IMAGEKIT"
+                    ? "bg-base-100 text-primary shadow-xs border border-base-300"
                     : "text-base-content/70 hover:text-base-content"
                 }`}
               >
                 <Mic className="h-3.5 w-3.5" />
-                <span>Téléverser MP3 (ImageKit &amp; EdgeStore)</span>
+                <span>Téléverser sur ImageKit (&le; 28 Mo)</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setAudioSourceType("URL")}
-                className={`flex-1 py-1 px-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                  audioSourceType === "URL"
-                    ? "bg-base-100 text-primary shadow-xs"
+                onClick={() => setUploadTarget("EDGESTORE")}
+                className={`flex-1 py-1.5 px-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  uploadTarget === "EDGESTORE"
+                    ? "bg-base-100 text-primary shadow-xs border border-base-300"
                     : "text-base-content/70 hover:text-base-content"
                 }`}
               >
-                <LinkIcon className="h-3.5 w-3.5" />
-                <span>Lien direct / Google Drive</span>
+                <HardDrive className="h-3.5 w-3.5" />
+                <span>Téléverser sur EdgeStore (Jusqu'à 150 Mo)</span>
               </button>
             </div>
 
-            {/* Mode 1 : Téléversement direct ImageKit / EdgeStore */}
-            {audioSourceType === "FILE" && (
+            {/* Onglet 1 : Téléverser sur ImageKit */}
+            {uploadTarget === "IMAGEKIT" && (
               <div className="space-y-2 pt-1">
                 <div className="flex items-center gap-3">
                   <label className="btn btn-primary btn-sm rounded-xl gap-2 cursor-pointer">
@@ -368,14 +396,14 @@ export default function AudioFormModal({
                     <span>
                       {isUploadingAudio
                         ? "Téléversement..."
-                        : audioUrl
-                        ? "Remplacer le fichier"
-                        : "Choisir un fichier audio"}
+                        : audioUrl && imageKitFileId
+                        ? "Remplacer l'audio (ImageKit)"
+                        : "Choisir un audio (ImageKit)"}
                     </span>
                     <input
                       type="file"
                       accept="audio/*"
-                      onChange={handleAudioFile}
+                      onChange={handleImageKitAudio}
                       className="hidden"
                       disabled={isUploadingAudio}
                     />
@@ -388,66 +416,82 @@ export default function AudioFormModal({
                   )}
                 </div>
 
-                {/* Barre de progression réelle */}
-                {isUploadingAudio && uploadProgress !== null && (
-                  <div className="space-y-1.5 pt-2 animate-in fade-in duration-200">
-                    <div className="flex justify-between text-xs font-bold text-primary">
-                      <span>Progression de l'envoi :</span>
-                      <span>{uploadProgressText}</span>
-                    </div>
-                    <div className="h-2.5 w-full bg-base-300 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary transition-all duration-150 rounded-full"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <p className="text-[11px] text-base-content/60 leading-normal">
-                  ⚡ <strong>Double moteur de téléversement :</strong> ImageKit gère les fichiers &le; 28 Mo, et <strong>EdgeStore</strong> prend automatiquement le relais pour les fichiers volumineux de plus de 28 Mo (jusqu'à <strong>150 Mo</strong>) !
+                <p className="text-[11px] text-base-content/65 leading-relaxed">
+                  ⚡ <strong>ImageKit :</strong> Idéal pour les fichiers audio de taille standard (<strong>&le; 28 Mo</strong>). Pour les fichiers plus lourds, utilisez l'onglet <strong>Téléverser sur EdgeStore</strong>.
                 </p>
               </div>
             )}
 
-            {/* Mode 2 : Lien externe direct / Google Drive */}
-            {audioSourceType === "URL" && (
+            {/* Onglet 2 : Téléverser sur EdgeStore */}
+            {uploadTarget === "EDGESTORE" && (
               <div className="space-y-2 pt-1">
-                <input
-                  type="url"
-                  value={audioUrl}
-                  onChange={(e) => {
-                    const normalized = normalizeAudioUrl(e.target.value);
-                    setAudioUrl(normalized);
-                    setImageKitFileId("");
-                    setAudioFileName("");
-                  }}
-                  placeholder="Collez ici le lien de partage Google Drive (ou lien direct MP3)"
-                  className="input input-bordered input-sm w-full rounded-xl text-xs font-mono"
-                />
-                <div className="rounded-xl bg-base-100 p-3 border border-base-300 text-[11px] text-base-content/75 space-y-1.5">
-                  <p className="font-bold text-primary flex items-center gap-1.5">
-                    <span>📁 Comment faire avec Google Drive :</span>
-                  </p>
-                  <ol className="list-decimal list-inside space-y-1 text-base-content/75">
-                    <li>Glissez votre audio MP3 sur votre <strong>Google Drive</strong>.</li>
-                    <li>Faites un clic droit sur l'audio &gt; <strong>Partager</strong>.</li>
-                    <li>Sous « Accès général », choisissez <strong>« Tous les utilisateurs disposant du lien »</strong>.</li>
-                    <li>Cliquez sur <strong>Copier le lien</strong> et collez-le directement dans le champ ci-dessus.</li>
-                  </ol>
-                  <p className="text-[10px] text-success font-semibold pt-0.5">
-                    ✓ Le système transforme automatiquement votre lien de partage en flux direct pour que les fidèles puissent l'écouter instantanément sur le site !
-                  </p>
+                <div className="flex items-center gap-3">
+                  <label className="btn btn-primary btn-sm rounded-xl gap-2 cursor-pointer">
+                    {isUploadingAudio ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    <span>
+                      {isUploadingAudio
+                        ? "Téléversement..."
+                        : audioUrl && !imageKitFileId
+                        ? "Remplacer l'audio (EdgeStore)"
+                        : "Choisir un audio (EdgeStore)"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleEdgeStoreAudio}
+                      className="hidden"
+                      disabled={isUploadingAudio}
+                    />
+                  </label>
+
+                  {audioFileName && (
+                    <span className="text-xs text-base-content/80 font-medium truncate max-w-xs">
+                      {audioFileName}
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-base-content/65 leading-relaxed">
+                  🚀 <strong>EdgeStore :</strong> Recommandé pour les cultes entiers et prédications volumineuses (<strong>jusqu'à 150 Mo</strong> sans blocage).
+                </p>
+              </div>
+            )}
+
+            {/* Barre de progression pendant l'envoi */}
+            {isUploadingAudio && uploadProgress !== null && (
+              <div className="space-y-1.5 pt-2 animate-in fade-in duration-200">
+                <div className="flex justify-between text-xs font-bold text-primary">
+                  <span>Progression du téléversement :</span>
+                  <span>{uploadProgressText}</span>
+                </div>
+                <div className="h-2.5 w-full bg-base-300 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-150 rounded-full"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
                 </div>
               </div>
             )}
 
-            {/* Lecteur d'aperçu rapide si un audio est sélectionné */}
+            {/* Lecteur d'aperçu audio si chargé */}
             {audioUrl && !isUploadingAudio && (
-              <div className="pt-2 border-t border-base-200">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-1">
-                  Aperçu de la lecture audio :
-                </p>
+              <div className="pt-2 border-t border-base-200 space-y-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-base-content/50">
+                    Aperçu de la lecture audio :
+                  </p>
+                  <span className="text-[10px] text-base-content/60 font-medium">
+                    {imageKitFileId
+                      ? "Hébergé sur ImageKit"
+                      : audioUrl.includes("esfiles.dev") || audioUrl.includes("edgestore")
+                      ? "Hébergé sur EdgeStore"
+                      : "Source audio configurée"}
+                  </span>
+                </div>
                 <audio controls src={audioUrl} className="h-8 w-full rounded-lg" />
               </div>
             )}
