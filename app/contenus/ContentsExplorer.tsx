@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import AudioPlayer from "../components/AudioPlayer";
 import UniversalVideoCard from "../components/UniversalVideoCard";
 import EmptyState from "../components/EmptyState";
@@ -18,7 +18,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import type { ChurchMedia, ChurchYouTubeVideo } from "@/types/type";
-import { detectVideoPlatform } from "@/lib/video-platforms";
+import { detectVideoPlatform, extractYouTubeId } from "@/lib/video-platforms";
 import { matchesSearchQuery } from "@/lib/search";
 
 // Icône Facebook
@@ -69,6 +69,153 @@ export default function ContentsExplorer({
 
   // Recherche textuelle
   const [searchQuery, setSearchQuery] = useState("");
+  const [clientLiveVideoId, setClientLiveVideoId] = useState<string | null>(null);
+  const probeContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const latestYouTubeVideo = useMemo(
+    () =>
+      initialVideos.find(
+        (v) => detectVideoPlatform(v.youtubeUrl || v.youtubeVideoId) === "YOUTUBE"
+      ),
+    [initialVideos]
+  );
+
+  // Vérification côté navigateur en secours si le serveur cloud a été bloqué par YouTube
+  useEffect(() => {
+    setClientLiveVideoId(null);
+    if (liveVideoId || !latestYouTubeVideo) return;
+
+    const ytId = extractYouTubeId(
+      latestYouTubeVideo.youtubeUrl || latestYouTubeVideo.youtubeVideoId
+    );
+    if (!ytId || !probeContainerRef.current) return;
+
+    let cancelled = false;
+    let settled = false;
+    let player: any = null;
+    let host: HTMLDivElement | null = null;
+    const container = probeContainerRef.current;
+
+    const cleanup = () => {
+      window.removeEventListener("message", onMessage);
+      clearTimeout(timer);
+      try {
+        player?.destroy?.();
+      } catch {}
+      try {
+        host?.remove();
+      } catch {}
+      player = null;
+      host = null;
+    };
+
+    const finish = (isLive: boolean) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      if (!cancelled && isLive) {
+        setClientLiveVideoId(latestYouTubeVideo.id);
+      }
+    };
+
+    const inspectVideoData = (data: any) => {
+      if (!data) return;
+      if (data.video_id && data.video_id !== ytId) return;
+      if (data.isLive === true) {
+        finish(true);
+      } else if (data.errorCode) {
+        finish(false);
+      }
+    };
+
+    const onMessage = (e: MessageEvent) => {
+      if (typeof e.data !== "string" || !e.data.startsWith("{")) return;
+      try {
+        const msg = JSON.parse(e.data);
+        const vd = msg.info?.videoData;
+        if (vd) {
+          inspectVideoData(vd);
+          if (
+            vd.video_id === ytId &&
+            typeof msg.info?.duration === "number" &&
+            msg.info.duration > 0 &&
+            vd.isLive === false
+          ) {
+            finish(false);
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener("message", onMessage);
+    const timer = setTimeout(() => finish(false), 8000);
+
+    const mountPlayer = () => {
+      if (settled || cancelled) return;
+      const YT = (window as any).YT;
+      if (!YT?.Player || !container) return;
+
+      host = document.createElement("div");
+      container.appendChild(host);
+
+      player = new YT.Player(host, {
+        width: "200",
+        height: "113",
+        videoId: ytId,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          playsinline: 1,
+          origin: window.location.origin,
+        },
+        events: {
+          onReady: (ev: any) => {
+            try {
+              ev.target.mute();
+              const vd = ev.target.getVideoData?.();
+              inspectVideoData(vd);
+              const dur = ev.target.getDuration?.();
+              if (typeof dur === "number" && dur > 0 && !vd?.isLive) {
+                finish(false);
+              }
+            } catch {}
+          },
+          onStateChange: (ev: any) => {
+            try {
+              inspectVideoData(ev.target.getVideoData?.());
+            } catch {}
+          },
+          onError: () => finish(false),
+        },
+      });
+    };
+
+    const win = window as any;
+    if (win.YT?.Player) {
+      mountPlayer();
+    } else {
+      const prevReady = win.onYouTubeIframeAPIReady;
+      win.onYouTubeIframeAPIReady = () => {
+        if (typeof prevReady === "function") prevReady();
+        mountPlayer();
+      };
+      if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+        const script = document.createElement("script");
+        script.src = "https://www.youtube.com/iframe_api";
+        script.async = true;
+        document.head.appendChild(script);
+      }
+    }
+
+    return () => {
+      cancelled = true;
+      settled = true;
+      cleanup();
+    };
+  }, [liveVideoId, latestYouTubeVideo]);
+
+  const activeLiveVideoId = liveVideoId || clientLiveVideoId;
 
   // Réinitialiser tous les filtres
   const resetFilters = () => {
@@ -300,7 +447,7 @@ export default function ContentsExplorer({
                     thumbnailUrl={video.thumbnailUrl}
                     channelName={video.channelName}
                     publishedAt={video.publishedAt}
-                    isLive={Boolean(liveVideoId && video.id === liveVideoId)}
+                    isLive={Boolean(activeLiveVideoId && video.id === activeLiveVideoId)}
                   />
                 ))}
               </div>
@@ -338,6 +485,13 @@ export default function ContentsExplorer({
           )}
         </div>
       )}
+
+      {/* Sonde invisible de vérification live YouTube côté client (exécutée uniquement si le serveur n'a pas déjà détecté le direct) */}
+      <div
+        ref={probeContainerRef}
+        aria-hidden="true"
+        className="fixed bottom-0 right-0 w-[200px] h-[113px] opacity-[0.001] pointer-events-none -z-10 overflow-hidden"
+      />
     </div>
   );
 }

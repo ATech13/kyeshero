@@ -24,6 +24,29 @@ export function getYouTubeEmbedUrl(videoId: string): string {
 
 export async function isYouTubeVideoLive(urlOrId: string): Promise<boolean> {
   const videoId = extractYouTubeVideoId(urlOrId);
+  const apiKey = process.env.YOUTUBE_API_KEY;
+
+  if (videoId && apiKey) {
+    try {
+      const apiRes = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoId}&key=${apiKey}`,
+        { cache: "no-store", signal: AbortSignal.timeout(4000) }
+      );
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        const item = data?.items?.[0];
+        if (item) {
+          return (
+            item.snippet?.liveBroadcastContent === "live" ||
+            Boolean(item.liveStreamingDetails?.actualStartTime && !item.liveStreamingDetails?.actualEndTime)
+          );
+        }
+      }
+    } catch {
+      // Fallback sur la vérification publique
+    }
+  }
+
   const targetUrl = videoId
     ? `https://www.youtube.com/watch?v=${videoId}`
     : urlOrId.startsWith("http") && urlOrId.includes("youtube.com")
@@ -35,7 +58,7 @@ export async function isYouTubeVideoLive(urlOrId: string): Promise<boolean> {
   try {
     const res = await fetch(targetUrl, {
       cache: "no-store",
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(4500),
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
