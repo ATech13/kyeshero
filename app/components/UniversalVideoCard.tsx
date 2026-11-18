@@ -84,8 +84,8 @@ export default function UniversalVideoCard({
       case "YOUTUBE":
       default:
         return isLive ? (
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-error text-white px-2 py-0.5 text-[11px] font-black uppercase tracking-wider shadow-xs">
-            <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+          <span className="inline-flex items-center gap-1 rounded-md bg-error text-white px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-normal shadow-xs">
+            <span className="h-1 w-1 rounded-full bg-white animate-ping" />
             <span>EN DIRECT</span>
           </span>
         ) : (

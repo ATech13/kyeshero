@@ -182,7 +182,7 @@ export default function PreachingInteractionForm({
                 onClick={() => handleTypeChange("COMMENT")}
                 className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition ${
                   type === "COMMENT"
-                    ? "bg-base-100 text-primary shadow-xs"
+                    ? "bg-secondary text-secondary-content shadow-xs"
                     : "text-base-content/70 hover:text-base-content"
                 }`}
               >

@@ -209,7 +209,7 @@ export default function Footer() {
 
         {/* Ligne inférieure de copyright */}
         <div className="mt-10 border-t border-base-300 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-base-content/50">
-          <p>© {new Date().getFullYear()} Assemblée Chrétienne de Goma. Tous droits réservés.</p>
+          <p>© {new Date().getFullYear()} Assemblée Chrétienne de Goma-Kyeshero. Tous droits réservés.</p>
           <p className="flex items-center gap-2">
             <span>Foi</span>
             <span>·</span>
