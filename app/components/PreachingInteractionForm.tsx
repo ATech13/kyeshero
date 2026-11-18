@@ -43,6 +43,8 @@ function playGreetingChime() {
   }
 }
 
+const DEFAULT_GREETING_MESSAGE = "je salue l'église au nom du Seigneur Jésus Christ";
+
 export default function PreachingInteractionForm({
   videoId,
   videoTitle,
@@ -56,6 +58,11 @@ export default function PreachingInteractionForm({
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const handleTypeChange = (nextType: InteractionType) => {
+    setType(nextType);
+    setErrorMessage(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -65,13 +72,13 @@ export default function PreachingInteractionForm({
       return;
     }
 
-    if (!authorName.trim() || authorName.trim().length < 2) {
-      setErrorMessage("Veuillez indiquer votre prénom ou votre nom.");
-      return;
-    }
-
-    if (!content.trim() || content.trim().length < 3) {
-      setErrorMessage("Veuillez saisir votre message ou votre salutation.");
+    if (type === "GREETING") {
+      if (!authorName.trim() || authorName.trim().length < 2) {
+        setErrorMessage("Veuillez indiquer votre prénom ou votre nom.");
+        return;
+      }
+    } else if (!content.trim() || content.trim().length < 3) {
+      setErrorMessage("Veuillez saisir votre commentaire.");
       return;
     }
 
@@ -82,9 +89,9 @@ export default function PreachingInteractionForm({
         videoId,
         videoTitle,
         type,
-        authorName: authorName.trim(),
-        contact: contact.trim() || null,
-        content: content.trim(),
+        authorName: type === "GREETING" ? authorName.trim() : "Visiteur",
+        contact: type === "GREETING" ? contact.trim() || null : null,
+        content: type === "GREETING" ? DEFAULT_GREETING_MESSAGE : content.trim(),
         honeypot,
       });
 
@@ -110,6 +117,9 @@ export default function PreachingInteractionForm({
     setContent("");
     setErrorMessage(null);
   };
+
+  const isSubmitDisabled =
+    isSubmitting || (type === "GREETING" ? !authorName.trim() : !content.trim());
 
   return (
     <div className="flex flex-col h-full bg-base-100/95 border border-base-300 rounded-2xl p-4 sm:p-5 shadow-xs">
@@ -153,7 +163,7 @@ export default function PreachingInteractionForm({
             <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-base-200 border border-base-300/60">
               <button
                 type="button"
-                onClick={() => setType("GREETING")}
+                onClick={() => handleTypeChange("GREETING")}
                 className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition ${
                   type === "GREETING"
                     ? "bg-secondary text-secondary-content shadow-xs"
@@ -169,7 +179,7 @@ export default function PreachingInteractionForm({
 
               <button
                 type="button"
-                onClick={() => setType("COMMENT")}
+                onClick={() => handleTypeChange("COMMENT")}
                 className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition ${
                   type === "COMMENT"
                     ? "bg-base-100 text-primary shadow-xs"
@@ -179,7 +189,6 @@ export default function PreachingInteractionForm({
                 <MessageSquare className="h-3.5 w-3.5" />
                 <span>Commentaire</span>
               </button>
-
             </div>
           </div>
 
@@ -194,56 +203,56 @@ export default function PreachingInteractionForm({
             aria-hidden="true"
           />
 
-          {/* Nom du visiteur */}
-          <div>
-            <label className="block text-[11px] font-bold text-base-content/75 mb-1" htmlFor="interaction-author">
-              Votre prénom ou nom *
-            </label>
-            <input
-              id="interaction-author"
-              type="text"
-              required
-              value={authorName}
-              onChange={(e) => setAuthorName(e.target.value)}
-              placeholder="Ex: Frère David, Sœur Marie..."
-              className="input input-sm input-bordered w-full rounded-xl text-xs bg-base-100"
-            />
-          </div>
+          {type === "GREETING" ? (
+            <>
+              {/* Nom du visiteur */}
+              <div>
+                <label className="block text-[11px] font-bold text-base-content/75 mb-1" htmlFor="interaction-author">
+                  Votre prénom ou nom *
+                </label>
+                <input
+                  id="interaction-author"
+                  type="text"
+                  required
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="Ex: Frère David, Sœur Marie..."
+                  className="input input-sm input-bordered w-full rounded-xl text-xs bg-base-100"
+                />
+              </div>
 
-          {/* Contact ou Ville optionnelle */}
-          <div>
-            <label className="block text-[11px] font-bold text-base-content/75 mb-1" htmlFor="interaction-contact">
-              Ville ou Contact <span className="font-normal text-base-content/50">(optionnel)</span>
-            </label>
-            <input
-              id="interaction-contact"
-              type="text"
-              value={contact}
-              onChange={(e) => setContact(e.target.value)}
-              placeholder="Ex: Goma, Butembo, +243..."
-              className="input input-sm input-bordered w-full rounded-xl text-xs bg-base-100"
-            />
-          </div>
-
-          {/* Message / Salutation */}
-          <div>
-            <label className="block text-[11px] font-bold text-base-content/75 mb-1" htmlFor="interaction-content">
-              {type === "COMMENT" ? "Votre commentaire *" : "Votre message de salutation *"}
-            </label>
-            <textarea
-              id="interaction-content"
-              required
-              rows={3}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={
-                type === "COMMENT"
-                  ? "Commentez ici..."
-                  : "Saluez ici..."
-              }
-              className="textarea textarea-bordered w-full rounded-xl text-xs leading-relaxed bg-base-100"
-            />
-          </div>
+              {/* Contact ou Ville optionnelle */}
+              <div>
+                <label className="block text-[11px] font-bold text-base-content/75 mb-1" htmlFor="interaction-contact">
+                  Ville ou Contact <span className="font-normal text-base-content/50">(optionnel)</span>
+                </label>
+                <input
+                  id="interaction-contact"
+                  type="text"
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  placeholder="Ex: Goma, Butembo, +243..."
+                  className="input input-sm input-bordered w-full rounded-xl text-xs bg-base-100"
+                />
+              </div>
+            </>
+          ) : (
+            /* Commentaire : uniquement le champ message */
+            <div>
+              <label className="block text-[11px] font-bold text-base-content/75 mb-1" htmlFor="interaction-content">
+                Votre commentaire *
+              </label>
+              <textarea
+                id="interaction-content"
+                required
+                rows={4}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Commentez ici..."
+                className="textarea textarea-bordered w-full rounded-xl text-xs leading-relaxed bg-base-100"
+              />
+            </div>
+          )}
 
           {/* Message d'erreur */}
           {errorMessage && (
@@ -257,7 +266,7 @@ export default function PreachingInteractionForm({
           <div className="pt-2">
             <button
               type="submit"
-              disabled={isSubmitting || !authorName.trim() || !content.trim()}
+              disabled={isSubmitDisabled}
               className={`btn btn-sm w-full rounded-xl font-bold gap-2 shadow-xs transition ${
                 type === "GREETING"
                   ? "btn-secondary text-secondary-content"

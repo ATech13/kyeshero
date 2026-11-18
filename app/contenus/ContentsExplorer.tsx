@@ -50,11 +50,13 @@ export type PlatformFilter = "ALL" | "YOUTUBE" | "FACEBOOK" | "TIKTOK";
 interface ContentsExplorerProps {
   initialAudios: ChurchMedia[];
   initialVideos: ChurchYouTubeVideo[];
+  liveVideoId?: string | null;
 }
 
 export default function ContentsExplorer({
   initialAudios,
   initialVideos,
+  liveVideoId,
 }: ContentsExplorerProps) {
   // Onglet principal : Tous / Vidéos / Audios
   const [activeTab, setActiveTab] = useState<MediaTab>("ALL");
@@ -298,6 +300,7 @@ export default function ContentsExplorer({
                     thumbnailUrl={video.thumbnailUrl}
                     channelName={video.channelName}
                     publishedAt={video.publishedAt}
+                    isLive={Boolean(liveVideoId && video.id === liveVideoId)}
                   />
                 ))}
               </div>

@@ -24,30 +24,67 @@ export interface StoredInteraction {
   updatedAt: string;
 }
 
+const DEFAULT_GREETING_MESSAGE = "je salue l'église au nom du Seigneur Jésus Christ";
+
 // Schéma de validation pour l'envoi public
-const submitSchema = z.object({
-  videoId: z
-    .string()
-    .nullish()
-    .transform((v) => (v && v.trim().length > 0 ? v.trim() : "general_preaching")),
-  videoTitle: z
-    .string()
-    .nullish()
-    .transform((v) => (v && v.trim().length > 0 ? v.trim() : "Prédication de l'église")),
-  type: z.enum(["COMMENT", "GREETING"]).default("COMMENT"),
-  authorName: z
-    .string()
-    .min(2, "Votre nom doit comporter au moins 2 caractères")
-    .max(100, "Le nom ne doit pas dépasser 100 caractères")
-    .trim(),
-  contact: z.string().max(120).nullish(),
-  content: z
-    .string()
-    .min(3, "Le message doit comporter au moins 3 caractères")
-    .max(2000, "Le message ne doit pas dépasser 2000 caractères")
-    .trim(),
-  honeypot: z.string().nullish(),
-});
+const submitSchema = z
+  .object({
+    videoId: z
+      .string()
+      .nullish()
+      .transform((v) => (v && v.trim().length > 0 ? v.trim() : "general_preaching")),
+    videoTitle: z
+      .string()
+      .nullish()
+      .transform((v) => (v && v.trim().length > 0 ? v.trim() : "Prédication de l'église")),
+    type: z.enum(["COMMENT", "GREETING"]).default("COMMENT"),
+    authorName: z
+      .string()
+      .max(100, "Le nom ne doit pas dépasser 100 caractères")
+      .nullish(),
+    contact: z.string().max(120).nullish(),
+    content: z
+      .string()
+      .max(2000, "Le message ne doit pas dépasser 2000 caractères")
+      .nullish(),
+    honeypot: z.string().nullish(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.honeypot && val.honeypot.trim().length > 0) return;
+
+    if (val.type === "GREETING") {
+      if ((val.authorName || "").trim().length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["authorName"],
+          message: "Votre nom doit comporter au moins 2 caractères",
+        });
+      }
+    } else if ((val.content || "").trim().length < 3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["content"],
+        message: "Le message doit comporter au moins 3 caractères",
+      });
+    }
+  })
+  .transform((val) => {
+    const trimmedAuthor = (val.authorName || "").trim();
+    const trimmedContent = (val.content || "").trim();
+
+    return {
+      ...val,
+      authorName:
+        val.type === "COMMENT"
+          ? trimmedAuthor || "Visiteur"
+          : trimmedAuthor || "Fidèle",
+      contact: val.type === "COMMENT" ? null : val.contact?.trim() || null,
+      content:
+        val.type === "GREETING"
+          ? trimmedContent || DEFAULT_GREETING_MESSAGE
+          : trimmedContent,
+    };
+  });
 
 // Emplacement de stockage résilient (garantit la persistance en mode dev / fallback)
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -112,9 +149,9 @@ export async function submitInteraction(data: {
   videoId?: string | null;
   videoTitle?: string | null;
   type?: InteractionType;
-  authorName: string;
+  authorName?: string | null;
   contact?: string | null;
-  content: string;
+  content?: string | null;
   honeypot?: string | null;
 }) {
   const validated = submitSchema.parse(data);

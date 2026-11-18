@@ -21,3 +21,39 @@ export function getYouTubeThumbnailUrl(videoId: string): string {
 export function getYouTubeEmbedUrl(videoId: string): string {
   return `https://www.youtube-nocookie.com/embed/${videoId}`;
 }
+
+export async function isYouTubeVideoLive(urlOrId: string): Promise<boolean> {
+  const videoId = extractYouTubeVideoId(urlOrId);
+  const targetUrl = videoId
+    ? `https://www.youtube.com/watch?v=${videoId}`
+    : urlOrId.startsWith("http") && urlOrId.includes("youtube.com")
+    ? urlOrId
+    : null;
+
+  if (!targetUrl) return false;
+
+  try {
+    const res = await fetch(targetUrl, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(3000),
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
+        Cookie: "SOCS=CAI",
+      },
+    });
+    if (!res.ok) return false;
+
+    const html = await res.text();
+    const isLiveNow =
+      html.includes('"liveBroadcastDetails":{"isLiveNow":true') ||
+      html.includes('"isLiveNow":true');
+    const hasEnded = html.includes('itemprop="endDate"');
+    const isUpcoming = html.includes('"isUpcoming":true');
+
+    return isLiveNow && !hasEnded && !isUpcoming;
+  } catch {
+    return false;
+  }
+}

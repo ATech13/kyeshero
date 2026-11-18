@@ -1,8 +1,8 @@
 import { getPublicMedia } from "@/actions/media";
 import { getPublicYouTubeVideos } from "@/actions/videos";
+import { isYouTubeVideoLive } from "@/lib/youtube";
+import { detectVideoPlatform } from "@/lib/video-platforms";
 import ContentsExplorer from "./ContentsExplorer";
-import { Headphones, Youtube, Radio } from "lucide-react";
-import { CHURCH_CONFIG } from "@/lib/church-info";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,14 @@ export default async function ContentsPage() {
     getPublicYouTubeVideos({ limit: 60 }),
   ]);
 
+  const latestYouTubeVideo = videos.find(
+    (v) => detectVideoPlatform(v.youtubeUrl || v.youtubeVideoId) === "YOUTUBE"
+  );
+  const isLatestLive = latestYouTubeVideo
+    ? await isYouTubeVideoLive(latestYouTubeVideo.youtubeUrl || latestYouTubeVideo.youtubeVideoId)
+    : false;
+  const liveVideoId = isLatestLive && latestYouTubeVideo ? latestYouTubeVideo.id : null;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-10 animate-in fade-in duration-500">
       {/* En-tête */}
@@ -35,6 +43,7 @@ export default async function ContentsPage() {
       <ContentsExplorer
         initialAudios={audios as any}
         initialVideos={videos as any}
+        liveVideoId={liveVideoId}
       />
     </div>
   );
