@@ -17,13 +17,26 @@ export async function generateMetadata({
     return { title: "Publication non trouvée" };
   }
 
+  const shareImage = item.coverImageUrl || "/images/logo.png";
+
   return {
     title: `${item.title} · Assemblée Chrétienne de Goma`,
     description: item.description || item.title,
     openGraph: {
       title: item.title,
       description: item.description || undefined,
-      images: item.coverImageUrl ? [item.coverImageUrl] : undefined,
+      images: [
+        {
+          url: shareImage,
+          alt: item.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: item.title,
+      description: item.description || undefined,
+      images: [shareImage],
     },
   };
 }

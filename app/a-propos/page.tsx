@@ -11,6 +11,17 @@ import bg from "../../public/images/church.webp"
 export const metadata: Metadata = {
   title: "À Propos | Assemblée Chrétienne de Goma",
   description: "Vision, piliers de foi, programme des rassemblements et citations spirituelles de l'Assemblée Chrétienne de Goma Keshero.",
+  openGraph: {
+    title: "À Propos · Assemblée Chrétienne de Goma",
+    description: "Vision, piliers de foi, programme des rassemblements et citations spirituelles de l'Assemblée Chrétienne de Goma Keshero.",
+    images: [{ url: "/images/logo.png", width: 1254, height: 1254, alt: "Logo Assemblée Chrétienne de Goma" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "À Propos · Assemblée Chrétienne de Goma",
+    description: "Vision, piliers de foi, programme des rassemblements et citations spirituelles de l'Assemblée Chrétienne de Goma Keshero.",
+    images: ["/images/logo.png"],
+  },
 };
 
 export default async function AboutPage() {

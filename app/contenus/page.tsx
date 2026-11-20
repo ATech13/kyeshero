@@ -12,6 +12,19 @@ export const metadata: Metadata = {
   title: "Contenus · Prédications, Chansons & Vidéos",
   description:
     "Médiathèque officielle de l'Assemblée Chrétienne de Goma : prédications audio, chants et diffusions vidéo YouTube, Facebook et TikTok.",
+  openGraph: {
+    title: "Contenus · Prédications, Chansons & Vidéos",
+    description:
+      "Médiathèque officielle de l'Assemblée Chrétienne de Goma : prédications audio, chants et diffusions vidéo YouTube, Facebook et TikTok.",
+    images: [{ url: "/images/logo.png", width: 1254, height: 1254, alt: "Logo Assemblée Chrétienne de Goma" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contenus · Prédications, Chansons & Vidéos",
+    description:
+      "Médiathèque officielle de l'Assemblée Chrétienne de Goma : prédications audio, chants et diffusions vidéo YouTube, Facebook et TikTok.",
+    images: ["/images/logo.png"],
+  },
 };
 
 export default async function ContentsPage() {

@@ -1,6 +1,26 @@
 import { MapPin, Phone, Youtube, MessageCircle } from "lucide-react";
 import { CHURCH_CONFIG } from "@/lib/church-info";
 import WhatsAppContactForm from "@/app/components/WhatsAppContactForm";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact & Localisation · Assemblée Chrétienne de Goma",
+  description:
+    "Coordonnées officielles, localisation à Keshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma.",
+  openGraph: {
+    title: "Contact & Localisation · Assemblée Chrétienne de Goma",
+    description:
+      "Coordonnées officielles, localisation à Keshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma.",
+    images: [{ url: "/images/logo.png", width: 1254, height: 1254, alt: "Logo Assemblée Chrétienne de Goma" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact & Localisation · Assemblée Chrétienne de Goma",
+    description:
+      "Coordonnées officielles, localisation à Keshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma.",
+    images: ["/images/logo.png"],
+  },
+};
 
 export default function ContactPage() {
   return (

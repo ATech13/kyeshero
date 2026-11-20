@@ -7,6 +7,19 @@ export const metadata: Metadata = {
   title: "Événements en Images · Assemblée Chrétienne de Goma",
   description:
     "Retrouvez en photos la vie de l'assemblée, les cultes, réunions de serviteurs et moments bénis de la communauté à Kyeshero.",
+  openGraph: {
+    title: "Événements en Images · Assemblée Chrétienne de Goma",
+    description:
+      "Retrouvez en photos la vie de l'assemblée, les cultes, réunions de serviteurs et moments bénis de la communauté à Kyeshero.",
+    images: [{ url: "/images/logo.png", width: 1254, height: 1254, alt: "Logo Assemblée Chrétienne de Goma" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Événements en Images · Assemblée Chrétienne de Goma",
+    description:
+      "Retrouvez en photos la vie de l'assemblée, les cultes, réunions de serviteurs et moments bénis de la communauté à Kyeshero.",
+    images: ["/images/logo.png"],
+  },
 };
 
 export const dynamic = "force-dynamic";

@@ -24,14 +24,27 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     };
   }
 
+  const shareImage = post.coverImageUrl || "/images/logo.png";
+
   return {
     title: `${post.title} · Assemblée Chrétienne de Goma`,
     description: post.description ? post.description.slice(0, 160) : "",
-    openGraph: post.coverImageUrl
-      ? {
-          images: [{ url: post.coverImageUrl }],
-        }
-      : undefined,
+    openGraph: {
+      title: post.title,
+      description: post.description ? post.description.slice(0, 160) : undefined,
+      images: [
+        {
+          url: shareImage,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description ? post.description.slice(0, 160) : undefined,
+      images: [shareImage],
+    },
   };
 }
 
