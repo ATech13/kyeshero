@@ -85,7 +85,7 @@ export default function Navbar() {
                 <Link
                     href="/"
                     className="nav-brand md:justify-self-start flex items-center gap-2.5 rounded-xl p-1 transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-primary"
-                    title="Accueil — Assemblée Chrétienne de Goma"
+                    title="Accueil — Assemblée Chrétienne de Goma Kyeshero"
                     aria-label="Retour à l'accueil"
                 >
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center text-primary-content">
@@ -99,7 +99,7 @@ export default function Navbar() {
                             Assemblée Chrétienne
                         </span>
                         <span className="text-[10px] font-bold tracking-wider text-base-content/60 uppercase">
-                            Goma · Keshero
+                            Goma · Kyeshero
                         </span>
                     </div>
                 </Link>

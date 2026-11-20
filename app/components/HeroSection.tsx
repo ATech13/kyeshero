@@ -109,7 +109,7 @@ export default function HeroSection({ nextEvent }: HeroSectionProps) {
         </div>
 
         <h1 className="hero-title text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight break-words drop-shadow-md">
-          Assemblée Chrétienne de Goma Keshero
+          Assemblée Chrétienne de Goma Kyeshero
         </h1>
 
         <p className="hero-verse mx-auto max-w-2xl text-sm sm:text-lg text-white/90 leading-relaxed break-words drop-shadow-sm font-medium">

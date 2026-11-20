@@ -28,7 +28,7 @@ interface SlideData {
 const SLIDES: SlideData[] = [
   {
     id: "welcome",
-    badge: "ASSEMBLÉE CHRÉTIENNE DE GOMA KESHERO",
+    badge: "ASSEMBLÉE CHRÉTIENNE DE GOMA KYESHERO",
     titleLine1: "Une communauté vivante",
     titleLine2: "unie dans l'amour et la",
     titleHighlight: "foi",

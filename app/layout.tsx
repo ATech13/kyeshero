@@ -26,8 +26,8 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Assemblée Chrétienne de Goma | Église Locale - Kyeshero",
-    template: "%s | Assemblée Chrétienne de Goma",
+    default: "Assemblée Chrétienne de Goma Kyeshero | Église Locale",
+    template: "%s | Assemblée Chrétienne de Goma Kyeshero",
   },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -36,10 +36,10 @@ export const metadata: Metadata = {
     title: "ACKyeshero",
   },
   description:
-    "Plateforme officielle de l'Assemblée Chrétienne de Goma (Keshero). Retrouvez les horaires des cultes, les événements à venir, les prédications audio et les vidéos officielles de notre chaîne YouTube.",
+    "Plateforme officielle de l'Assemblée Chrétienne de Goma Kyeshero. Retrouvez les horaires des cultes, les événements à venir, les prédications audio et les vidéos officielles de notre chaîne YouTube.",
   keywords: [
     "église goma",
-    "assemblée chrétienne de goma",
+    "assemblée chrétienne de goma kyeshero",
     "église keshero",
     "église kyeshero",
     "culte goma",
@@ -50,9 +50,9 @@ export const metadata: Metadata = {
     "message du temps de la fin",
     "kyeshero net",
   ],
-  authors: [{ name: "Assemblée Chrétienne de Goma" }],
-  creator: "Assemblée Chrétienne de Goma",
-  publisher: "Assemblée Chrétienne de Goma",
+  authors: [{ name: "Assemblée Chrétienne de Goma Kyeshero" }],
+  creator: "Assemblée Chrétienne de Goma Kyeshero",
+  publisher: "Assemblée Chrétienne de Goma Kyeshero",
   alternates: {
     canonical: siteUrl,
   },
@@ -68,10 +68,10 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "Assemblée Chrétienne de Goma | Église Locale",
-    description: "Cultes dominicaux, prédications bibliques, chants et communion fraternelle à Goma (Kyeshero).",
+    title: "Assemblée Chrétienne de Goma Kyeshero | Église Locale",
+    description: "Cultes dominicaux, prédications bibliques, chants et communion fraternelle à Goma Kyeshero.",
     url: siteUrl,
-    siteName: "Assemblée Chrétienne de Goma",
+    siteName: "Assemblée Chrétienne de Goma Kyeshero",
     type: "website",
     locale: "fr_FR",
     images: [
@@ -79,14 +79,14 @@ export const metadata: Metadata = {
         url: "/images/logo.png",
         width: 1254,
         height: 1254,
-        alt: "Logo officiel de l'Assemblée Chrétienne de Goma",
+        alt: "Logo officiel de l'Assemblée Chrétienne de Goma Kyeshero",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Assemblée Chrétienne de Goma | Église Locale",
-    description: "Cultes dominicaux, prédications bibliques, chants et communion fraternelle à Goma (Kyeshero).",
+    title: "Assemblée Chrétienne de Goma Kyeshero | Église Locale",
+    description: "Cultes dominicaux, prédications bibliques, chants et communion fraternelle à Goma Kyeshero.",
     images: ["/images/logo.png"],
   },
   robots: {
@@ -105,13 +105,13 @@ export const metadata: Metadata = {
 const churchJsonLd = {
   "@context": "https://schema.org",
   "@type": "Church",
-  name: "Assemblée Chrétienne de Goma",
-  alternateName: ["Assemblée Chrétienne de Keshero", "Assemblée Chrétienne de Kyeshero"],
+  name: "Assemblée Chrétienne de Goma Kyeshero",
+  alternateName: ["Assemblée Chrétienne de Keshero", "Assemblée Chrétienne de Goma"],
   url: siteUrl,
   logo: `${siteUrl}/images/logo.png`,
   image: `${siteUrl}/images/logo.png`,
   description:
-    "Plateforme officielle de l'Assemblée Chrétienne de Goma (Keshero). Cultes d'adoration, prédications de la parole de Dieu, chants et communion fraternelle.",
+    "Plateforme officielle de l'Assemblée Chrétienne de Goma Kyeshero. Cultes d'adoration, prédications de la parole de Dieu, chants et communion fraternelle.",
   address: {
     "@type": "PostalAddress",
     streetAddress: "Quartier Keshero",

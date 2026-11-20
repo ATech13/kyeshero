@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   const shareImage = post.coverImageUrl || "/images/logo.png";
 
   return {
-    title: `${post.title} · Assemblée Chrétienne de Goma`,
+    title: `${post.title} · Assemblée Chrétienne de Goma Kyeshero`,
     description: post.description ? post.description.slice(0, 160) : "",
     openGraph: {
       title: post.title,

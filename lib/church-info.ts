@@ -2,7 +2,7 @@
  * Configuration officielle des coordonnées et réseaux sociaux de l'église
  */
 export const CHURCH_CONFIG = {
-  name: "Assemblée Chrétienne de Keshero",
+  name: "Assemblée Chrétienne de Goma Kyeshero",
   fullCity: "Goma, Nord-Kivu, RDC",
   address: "Quartier Keshero, Ville de Goma, Nord-Kivu, RDC",
   phone: "+243 991 267 790",

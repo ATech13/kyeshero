@@ -20,7 +20,7 @@ export async function generateMetadata({
   const shareImage = item.coverImageUrl || "/images/logo.png";
 
   return {
-    title: `${item.title} · Assemblée Chrétienne de Goma`,
+    title: `${item.title} · Assemblée Chrétienne de Goma Kyeshero`,
     description: item.description || item.title,
     openGraph: {
       title: item.title,

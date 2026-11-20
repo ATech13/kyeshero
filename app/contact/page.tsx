@@ -4,20 +4,20 @@ import WhatsAppContactForm from "@/app/components/WhatsAppContactForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact & Localisation · Assemblée Chrétienne de Goma",
+  title: "Contact & Localisation · Assemblée Chrétienne de Goma Kyeshero",
   description:
-    "Coordonnées officielles, localisation à Keshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma.",
+    "Coordonnées officielles, localisation à Kyeshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma Kyeshero.",
   openGraph: {
-    title: "Contact & Localisation · Assemblée Chrétienne de Goma",
+    title: "Contact & Localisation · Assemblée Chrétienne de Goma Kyeshero",
     description:
-      "Coordonnées officielles, localisation à Keshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma.",
-    images: [{ url: "/images/logo.png", width: 1254, height: 1254, alt: "Logo Assemblée Chrétienne de Goma" }],
+      "Coordonnées officielles, localisation à Kyeshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma Kyeshero.",
+    images: [{ url: "/images/logo.png", width: 1254, height: 1254, alt: "Logo Assemblée Chrétienne de Goma Kyeshero" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Contact & Localisation · Assemblée Chrétienne de Goma",
+    title: "Contact & Localisation · Assemblée Chrétienne de Goma Kyeshero",
     description:
-      "Coordonnées officielles, localisation à Keshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma.",
+      "Coordonnées officielles, localisation à Kyeshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma Kyeshero.",
     images: ["/images/logo.png"],
   },
 };
@@ -27,7 +27,7 @@ export default function ContactPage() {
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8 space-y-10 animate-in fade-in duration-500">
       <div className="text-center space-y-3">
         <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-base-content">
-          Contactez l’Assemblée Chrétienne
+          Contactez l’Assemblée Chrétienne de Goma Kyeshero
         </h1>
         <p className="text-base text-base-content/70 max-w-xl mx-auto">
           Vous êtes de passage à Goma ou vous cherchez une communauté pour prier ? N’hésitez pas à nous écrire ou nous rendre visite.
