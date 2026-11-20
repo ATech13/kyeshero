@@ -76,18 +76,26 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     images: [
       {
-        url: "/images/logo.png",
-        width: 1254,
-        height: 1254,
+        url: "/images/logo-share.png",
+        width: 600,
+        height: 600,
         alt: "Logo officiel de l'Assemblée Chrétienne de Goma Kyeshero",
+        type: "image/png",
+      },
+      {
+        url: "/images/logo-share.jpg",
+        width: 600,
+        height: 600,
+        alt: "Logo officiel de l'Assemblée Chrétienne de Goma Kyeshero",
+        type: "image/jpeg",
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "Assemblée Chrétienne de Goma Kyeshero | Église Locale",
     description: "Cultes dominicaux, prédications bibliques, chants et communion fraternelle à Goma Kyeshero.",
-    images: ["/images/logo.png"],
+    images: ["/images/logo-share.png"],
   },
   robots: {
     index: true,
@@ -108,8 +116,8 @@ const churchJsonLd = {
   name: "Assemblée Chrétienne de Goma Kyeshero",
   alternateName: ["Assemblée Chrétienne de Keshero", "Assemblée Chrétienne de Goma"],
   url: siteUrl,
-  logo: `${siteUrl}/images/logo.png`,
-  image: `${siteUrl}/images/logo.png`,
+  logo: `${siteUrl}/images/logo-share.png`,
+  image: `${siteUrl}/images/logo-share.png`,
   description:
     "Plateforme officielle de l'Assemblée Chrétienne de Goma Kyeshero. Cultes d'adoration, prédications de la parole de Dieu, chants et communion fraternelle.",
   address: {
@@ -134,6 +142,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="fr" data-theme="eglise" className={montserrat.variable}>
         <head>
+          <link rel="image_src" href={`${siteUrl}/images/logo-share.png`} />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(churchJsonLd) }}

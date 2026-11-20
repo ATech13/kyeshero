@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     };
   }
 
-  const shareImage = post.coverImageUrl || "/images/logo.png";
+  const shareImage = post.coverImageUrl || "/images/logo-share.png";
 
   return {
     title: `${post.title} · Assemblée Chrétienne de Goma Kyeshero`,

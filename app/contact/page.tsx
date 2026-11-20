@@ -11,14 +11,14 @@ export const metadata: Metadata = {
     title: "Contact & Localisation · Assemblée Chrétienne de Goma Kyeshero",
     description:
       "Coordonnées officielles, localisation à Kyeshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma Kyeshero.",
-    images: [{ url: "/images/logo.png", width: 1254, height: 1254, alt: "Logo Assemblée Chrétienne de Goma Kyeshero" }],
+    images: [{ url: "/images/logo-share.png", width: 600, height: 600, alt: "Logo Assemblée Chrétienne de Goma Kyeshero" }],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "Contact & Localisation · Assemblée Chrétienne de Goma Kyeshero",
     description:
       "Coordonnées officielles, localisation à Kyeshero (Goma) et contact direct pour joindre l'Assemblée Chrétienne de Goma Kyeshero.",
-    images: ["/images/logo.png"],
+    images: ["/images/logo-share.png"],
   },
 };
 

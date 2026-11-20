@@ -11,14 +11,14 @@ export const metadata: Metadata = {
     title: "Événements en Images · Assemblée Chrétienne de Goma Kyeshero",
     description:
       "Retrouvez en photos la vie de l'assemblée, les cultes, réunions de serviteurs et moments bénis de la communauté à Kyeshero.",
-    images: [{ url: "/images/logo.png", width: 1254, height: 1254, alt: "Logo Assemblée Chrétienne de Goma Kyeshero" }],
+    images: [{ url: "/images/logo-share.png", width: 600, height: 600, alt: "Logo Assemblée Chrétienne de Goma Kyeshero" }],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "Événements en Images · Assemblée Chrétienne de Goma Kyeshero",
     description:
       "Retrouvez en photos la vie de l'assemblée, les cultes, réunions de serviteurs et moments bénis de la communauté à Kyeshero.",
-    images: ["/images/logo.png"],
+    images: ["/images/logo-share.png"],
   },
 };
 

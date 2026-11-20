@@ -17,7 +17,7 @@ export async function generateMetadata({
     return { title: "Publication non trouvée" };
   }
 
-  const shareImage = item.coverImageUrl || "/images/logo.png";
+  const shareImage = item.coverImageUrl || "/images/logo-share.png";
 
   return {
     title: `${item.title} · Assemblée Chrétienne de Goma Kyeshero`,
