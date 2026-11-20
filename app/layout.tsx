@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import PwaInstallBanner from "./components/PwaInstallBanner";
 import { Toaster } from "sonner";
 import { ClerkProvider } from "@clerk/nextjs";
 import { EdgeStoreProvider } from "@/lib/edgestore";
@@ -16,6 +17,7 @@ const montserrat = Montserrat({
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://kyeshero.net";
 
 export const viewport: Viewport = {
+  themeColor: "#0f172a",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -26,6 +28,12 @@ export const metadata: Metadata = {
   title: {
     default: "Assemblée Chrétienne de Goma | Église Locale - Kyeshero",
     template: "%s | Assemblée Chrétienne de Goma",
+  },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "ACKyeshero",
   },
   description:
     "Plateforme officielle de l'Assemblée Chrétienne de Goma (Keshero). Retrouvez les horaires des cultes, les événements à venir, les prédications audio et les vidéos officielles de notre chaîne YouTube.",
@@ -51,10 +59,13 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/images/logo.png" },
-      { url: "/icon.png" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
     shortcut: "/images/logo.png",
-    apple: "/images/logo.png",
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   openGraph: {
     title: "Assemblée Chrétienne de Goma | Église Locale",
@@ -139,6 +150,7 @@ export default function RootLayout({
             />
             <main className="flex-1 w-full max-w-full overflow-x-clip">{children}</main>
             <Footer />
+            <PwaInstallBanner />
           </EdgeStoreProvider>
         </body>
       </html>
